@@ -5,7 +5,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import { roleSatisfies } from '../utils/constants.js';
 
-export default function ProtectedRoute({ roles }) {
+export default function ProtectedRoute({ roles, permission }) {
   const { user } = useAuth();
   const location = useLocation();
 
@@ -14,6 +14,13 @@ export default function ProtectedRoute({ roles }) {
     return (
       <div className="state state--error" role="alert">
         You do not have access to this page. It requires the {roles.join(' or ')} role.
+      </div>
+    );
+  }
+  if (permission && !user.permissionKeys?.includes(permission)) {
+    return (
+      <div className="state state--error" role="alert">
+        You do not have permission to view this page.
       </div>
     );
   }

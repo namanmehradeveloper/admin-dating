@@ -200,6 +200,10 @@ export const NAV_GROUPS = [
     ],
   },
   {
+    label: 'Security',
+    items: [{ to: '/security/login-activity', label: 'Login activity', permission: 'AUDIT_LOGS.VIEW' }],
+  },
+  {
     label: 'Monetization',
     items: [
       { to: '/subscriptions', label: 'Subscriptions', roles: ['ADMIN'] },

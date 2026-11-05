@@ -53,6 +53,7 @@ const NAV_ICONS = {
   '/analytics': LineChart,
   '/monitoring': Monitor,
   '/audit-logs': ScrollText,
+  '/security/login-activity': ShieldCheck,
   '/settings': Settings,
 };
 
@@ -60,7 +61,11 @@ export default function Sidebar({ isOpen, onNavigate }) {
   const { user } = useAuth();
   const groups = NAV_GROUPS.map((group) => ({
     ...group,
-    items: group.items.filter((item) => roleSatisfies(user.role, item.roles)),
+    items: group.items.filter(
+      (item) =>
+        roleSatisfies(user.role, item.roles) &&
+        (!item.permission || user.permissionKeys?.includes(item.permission)),
+    ),
   })).filter((group) => group.items.length > 0);
 
   return (

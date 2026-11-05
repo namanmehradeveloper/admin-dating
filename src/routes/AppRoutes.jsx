@@ -14,6 +14,7 @@ import CouponsPage from '../pages/CouponsPage.jsx';
 import ExperimentsPage from '../pages/ExperimentsPage.jsx';
 import FraudPage from '../pages/FraudPage.jsx';
 import LoginPage from '../pages/LoginPage.jsx';
+import LoginActivityPage from '../pages/LoginActivityPage.jsx';
 import MatchesPage from '../pages/MatchesPage.jsx';
 import MessagingPage from '../pages/MessagingPage.jsx';
 import MonitoringPage from '../pages/MonitoringPage.jsx';
@@ -72,6 +73,9 @@ export default function AppRoutes() {
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/cms" element={<CmsPage />} />
           <Route path="/cms/:cmsId" element={<CmsDetailPage />} />
+          <Route element={<ProtectedRoute permission="AUDIT_LOGS.VIEW" />}>
+            <Route path="/security/login-activity" element={<LoginActivityPage />} />
+          </Route>
           <Route element={<ProtectedRoute roles={['ADMIN']} />}>
             <Route path="/staff" element={<StaffPage />} />
             <Route path="/subscriptions" element={<SubscriptionsPage />} />
