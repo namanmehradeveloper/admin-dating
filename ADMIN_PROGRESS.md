@@ -48,10 +48,11 @@
 - Reported MESSAGE content remains on Reports detail
 - **Key files:** `adminMessaging.service.js`, `MessagingPage.jsx`
 
-### 7. Voice / Video Calls — Integration blocked
+### 7. Voice / Video Calls — Admin ops live
 
-- Honest status stub: calling not implemented in API
-- **Key files:** `adminCalls.service.js`, `CallsPage.jsx`
+- Provider status + volume stats + call history (metadata only; no media / Agora tokens)
+- **Key files:** `adminCalls.service.js`, `CallsPage.jsx`, `calls.api.js`
+- Admin APIs: `GET /admin/calls/status|stats|/:callId` and `GET /admin/calls`
 
 ### 8. Subscriptions — Partial
 

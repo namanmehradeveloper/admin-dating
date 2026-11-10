@@ -31,6 +31,19 @@ export function localInputToIso(value) {
   return value ? new Date(value).toISOString() : undefined;
 }
 
+// "2m 14s" / "45s" for answered call length; "—" when unknown.
+export function formatDuration(seconds) {
+  if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 0) return '—';
+  const whole = Math.round(seconds);
+  if (whole < 60) return `${whole}s`;
+  const minutes = Math.floor(whole / 60);
+  const rem = whole % 60;
+  if (minutes < 60) return rem ? `${minutes}m ${rem}s` : `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return mins ? `${hours}h ${mins}m` : `${hours}h`;
+}
+
 // "3 hours ago" / "just now" for activity feeds.
 export function formatRelativeTime(value) {
   if (!value) return '—';

@@ -2,9 +2,7 @@
 
 import api, { unwrap } from './axios.js';
 
-export function getCallsStatus() {
-  return unwrap(api.get('/admin/calls/status'));
-}
+export { getCallsStatus } from './calls.api.js';
 
 export function getPaymentsStatus() {
   return unwrap(api.get('/admin/payments/status'));

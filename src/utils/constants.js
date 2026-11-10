@@ -53,6 +53,8 @@ export const CAMPAIGN_AUDIENCES = ['ALL_USERS', 'VERIFIED_USERS', 'PREMIUM_USERS
 
 export const MATCH_STATUSES = ['ACTIVE', 'ENDED'];
 export const SWIPE_ACTIONS = ['LIKE', 'PASS', 'SUPER_LIKE'];
+export const CALL_TYPES = ['AUDIO', 'VIDEO'];
+export const CALL_STATUSES = ['RINGING', 'ACCEPTED', 'REJECTED', 'CANCELLED', 'MISSED', 'BUSY', 'ENDED'];
 
 export const PROFILE_VISIBILITY_STATUSES = ['VISIBLE', 'HIDDEN', 'PAUSED', 'SNOOZED'];
 export const PHOTO_MODERATION_STATUSES = ['PENDING', 'APPROVED', 'REJECTED'];
@@ -189,7 +191,7 @@ export const NAV_GROUPS = [
       { to: '/swipes', label: 'Swipes & likes', roles: STAFF_ROLES },
       { to: '/messaging', label: 'Messaging', roles: STAFF_ROLES },
       { to: '/blocks', label: 'Blocks', roles: STAFF_ROLES },
-      { to: '/calls', label: 'Calls', roles: ['ADMIN'], badge: 'Soon' },
+      { to: '/calls', label: 'Calls', roles: ['ADMIN'] },
     ],
   },
   {
