@@ -1,15 +1,15 @@
 // Chart colours and labels. Recharts draws SVG attributes, so colours are plain values, not CSS variables.
 
 export const CHART_COLORS = {
-  primary: '#5b4bdb',
-  pink: '#e5487a',
-  teal: '#8b7cf5',
-  amber: '#f0a020',
-  green: '#22a06b',
-  red: '#d0384b',
-  grey: '#a0a6b8',
-  grid: '#e3e6ef',
-  text: '#687089',
+  primary: '#5a3fd6',
+  pink: '#e04878',
+  teal: '#1f9a8f',
+  amber: '#d8891a',
+  green: '#178a52',
+  red: '#d03550',
+  grey: '#7f8aa3',
+  grid: '#dfe3ef',
+  text: '#5b657c',
 };
 
 export const STATUS_COLORS = {

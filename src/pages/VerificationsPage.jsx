@@ -68,7 +68,7 @@ export default function VerificationsPage() {
             value={searchText}
             onChange={setSearchText}
             onClear={() => setQ('')}
-            placeholder="Name, email, usr_… or ver_…"
+            placeholder="Search name, email, user ID, or verification ID"
           />
           <button type="submit" className="button button--primary">
             Search

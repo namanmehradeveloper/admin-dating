@@ -32,6 +32,7 @@ export default function SearchField({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
+        aria-label={label || placeholder}
         maxLength={maxLength}
         autoComplete="off"
         spellCheck={false}

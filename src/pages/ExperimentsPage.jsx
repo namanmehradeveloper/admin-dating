@@ -130,7 +130,7 @@ export default function ExperimentsPage() {
             value={searchText}
             onChange={setSearchText}
             onClear={() => setFilters((current) => ({ ...current, q: '' }))}
-            placeholder="Name or key…"
+            placeholder="Search experiment name or key"
           />
           <button type="submit" className="button button--primary">
             Search

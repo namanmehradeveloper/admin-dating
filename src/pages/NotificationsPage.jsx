@@ -89,7 +89,7 @@ function CampaignForm({ onSent }) {
         {form.audience === 'SINGLE_USER' && (
           <label className="field">
             <span>Member id</span>
-            <input value={form.targetUserId} placeholder="usr_…" onChange={update('targetUserId')} aria-invalid={Boolean(fieldErrors.targetUserId)} />
+            <input value={form.targetUserId} placeholder="Enter user ID" onChange={update('targetUserId')} aria-invalid={Boolean(fieldErrors.targetUserId)} />
           </label>
         )}
         <p className="muted small field--wide">
@@ -139,7 +139,7 @@ export default function NotificationsPage() {
             value={searchText}
             onChange={setSearchText}
             onClear={() => setFilters({ q: '' })}
-            placeholder="Title, message, campaign id or usr_…"
+            placeholder="Search title, message, campaign, or user ID"
           />
           <button type="submit" className="button button--primary">
             Search

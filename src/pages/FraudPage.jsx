@@ -64,7 +64,7 @@ export default function FraudPage() {
 
   return (
     <div className="admin-page">
-      <PageHeader title="AI & fraud detection" subtitle="Local rule-based risk scoring. Third-party AI is not invented or faked." />
+      <PageHeader title="Risk & fraud signals" subtitle="Review risk signals and investigate suspicious member activity." />
       <Notice onDismiss={() => setNotice(null)}>{notice}</Notice>
 
       {status.isLoading && !status.data ? (
@@ -93,7 +93,7 @@ export default function FraudPage() {
             value={scanUserId}
             onChange={setScanUserId}
             onClear={() => setFilters((current) => ({ ...current, userId: '' }))}
-            placeholder="usr_… to scan or filter"
+            placeholder="Enter a user ID to scan or filter"
             maxLength={64}
           />
           <button type="submit" className="button button--primary" disabled={busyId === 'scan'}>

@@ -161,15 +161,15 @@ export default function BlocksPage() {
               value={searchText}
               onChange={setSearchText}
               onClear={() => setFilters((current) => ({ ...current, q: '' }))}
-              placeholder="Name, usr_… or blk_…"
+              placeholder="Search name, user ID, or block ID"
             />
             <label className="field field--inline">
               <span>Blocker id</span>
-              <input type="text" value={blockerId} onChange={(event) => setBlockerId(event.target.value)} placeholder="usr_…" maxLength={64} />
+              <input type="text" value={blockerId} onChange={(event) => setBlockerId(event.target.value)} placeholder="Enter user ID" maxLength={64} />
             </label>
             <label className="field field--inline">
               <span>Blocked id</span>
-              <input type="text" value={blockedId} onChange={(event) => setBlockedId(event.target.value)} placeholder="usr_…" maxLength={64} />
+              <input type="text" value={blockedId} onChange={(event) => setBlockedId(event.target.value)} placeholder="Enter user ID" maxLength={64} />
             </label>
             <label className="field field--inline">
               <span>Mutual only</span>
@@ -390,7 +390,7 @@ export default function BlocksPage() {
                   <SearchField
                     value={investigateId}
                     onChange={setInvestigateId}
-                    placeholder="usr_…"
+                    placeholder="Enter user ID"
                     maxLength={64}
                   />
                   <button type="submit" className="button button--primary">

@@ -301,7 +301,7 @@ export default function MatchesPage() {
               value={searchText}
               onChange={setSearchText}
               onClear={() => setFilters((current) => ({ ...current, q: '' }))}
-              placeholder="Name, email, usr_… or mat_…"
+              placeholder="Search name, email, user ID, or match ID"
             />
             <button type="submit" className="button button--primary">
               Search

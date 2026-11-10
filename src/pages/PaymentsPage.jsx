@@ -23,7 +23,7 @@ export default function PaymentsPage() {
         subtitle="Ledger and refunds will appear here when store billing is connected. Card numbers are never stored."
       />
 
-      <Notice tone="warning">Integration blocked: store billing is not configured.</Notice>
+      <Notice tone="warning">Store billing is not connected. Transaction data will appear once the integration is configured.</Notice>
 
       <div className="grid-2">
         <section className="card">
@@ -33,7 +33,7 @@ export default function PaymentsPage() {
             </span>
             <div>
               <h2>Store billing</h2>
-              <p>Hook up App Store / Play billing to surface entitlements, refunds and ledger activity for staff.</p>
+              <p>Connect App Store or Google Play billing to review purchases, entitlements, and refunds.</p>
             </div>
           </div>
           <div className="section-gap">
@@ -49,7 +49,7 @@ export default function PaymentsPage() {
         </section>
 
         <section className="card">
-          <h2>Coming online later</h2>
+          <h2>Available after integration</h2>
           <ul className="integration-checklist">
             <li>
               <span className="integration-checklist__mark" aria-hidden />

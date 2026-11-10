@@ -75,7 +75,7 @@ export default function MessagingPage() {
             value={searchText}
             onChange={setSearchText}
             onClear={() => setFilters((current) => ({ ...current, q: '' }))}
-            placeholder="Name, user id, cnv_… or mat_…"
+            placeholder="Search member, conversation, or match ID"
           />
           <button type="submit" className="button button--primary">
             Search

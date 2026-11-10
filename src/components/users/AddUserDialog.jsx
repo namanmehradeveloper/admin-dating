@@ -85,7 +85,7 @@ export default function AddUserDialog({ open, onClose, onCreated }) {
     <ConfirmDialog
       open={open}
       title="Add user"
-      message="Same core details as the member app onboarding. They can sign in with OTP on this phone number."
+      message="Create a member account. The member can sign in using a one-time code sent to this phone number."
       confirmLabel="Create user"
       className="dialog--wide"
       isBusy={isSaving}
@@ -96,7 +96,7 @@ export default function AddUserDialog({ open, onClose, onCreated }) {
     >
       <div className="form-grid">
         <label className="field">
-          <span>Phone (E.164, required)</span>
+          <span>Phone number with country code *</span>
           <input
             type="tel"
             value={form.phoneNumber}
@@ -138,7 +138,7 @@ export default function AddUserDialog({ open, onClose, onCreated }) {
         />
         <EnumSelect label="Show me" value={form.showMe} options={SHOW_ME_OPTIONS} onChange={setField('showMe')} />
         <label className="field">
-          <span>Max distance (km)</span>
+          <span>Maximum distance (km)</span>
           <input
             type="number"
             min={1}

@@ -36,7 +36,7 @@ export default function SupportPage() {
 
   return (
     <div className="admin-page">
-      <PageHeader title="Support" subtitle="Help requests from members." />
+      <PageHeader title="Support" subtitle="Review member requests and manage support conversations." />
       <FilterToolbar
         label="Status"
         chips={STATUS_CHIPS.map((chip) => (
@@ -53,7 +53,7 @@ export default function SupportPage() {
             value={searchText}
             onChange={setSearchText}
             onClear={() => setFilters((current) => ({ ...current, q: '' }))}
-            placeholder="Subject, ticket id or usr_…"
+            placeholder="Search subject, ticket ID, or user ID"
           />
           <button type="submit" className="button button--primary">
             Search

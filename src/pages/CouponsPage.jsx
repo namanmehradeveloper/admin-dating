@@ -160,7 +160,7 @@ export default function CouponsPage() {
             value={searchText}
             onChange={setSearchText}
             onClear={() => setFilters((current) => ({ ...current, q: '' }))}
-            placeholder="Coupon code…"
+            placeholder="Search coupon code"
           />
           <button type="submit" className="button button--primary">
             Search

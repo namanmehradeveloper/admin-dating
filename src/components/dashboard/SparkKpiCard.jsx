@@ -3,6 +3,8 @@
 import { Link } from 'react-router-dom';
 import { formatNumber } from '../../utils/format.js';
 import Sparkline from '../charts/Sparkline.jsx';
+import { NAV_ICONS } from '../navigation.js';
+import { ChartNoAxesCombined } from 'lucide-react';
 import { CHART_COLORS } from '../charts/chartTheme.js';
 
 function displayValue(value) {
@@ -34,10 +36,11 @@ export default function SparkKpiCard({
   tone = 'primary',
   size = 'default',
 }) {
+  const Icon = NAV_ICONS[to] ?? ChartNoAxesCombined;
   const body = (
     <>
       <div className="spark-kpi__meta">
-        <span className={`spark-kpi__tone spark-kpi__tone--${tone}`} />
+        <span className={`spark-kpi__tone spark-kpi__tone--${tone}`} aria-hidden><Icon size={17} strokeWidth={1.8} /></span>
         <span className="spark-kpi__label">{label}</span>
         <DeltaBadge delta={delta} />
       </div>

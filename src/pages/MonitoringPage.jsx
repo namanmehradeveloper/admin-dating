@@ -111,8 +111,7 @@ export default function MonitoringPage() {
       )}
 
       <Notice>
-        Metrics come from this API process, MongoDB, and Socket.IO. Features that are not built yet are labeled honestly —
-        never with invented uptime scores.
+        Current API, database, and connection metrics. Unavailable integrations are marked as not configured.
       </Notice>
 
       <div className="stat-grid stat-grid--kpi">

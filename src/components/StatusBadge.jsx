@@ -10,5 +10,5 @@ const TONES = {
 
 export default function StatusBadge({ value }) {
   const tone = TONES[String(value ?? '').toUpperCase()] ?? 'neutral';
-  return <span className={`badge badge--${tone}`}>{formatEnum(value)}</span>;
+  return <span className={`badge badge--${tone}`}><span className="badge__dot" aria-hidden />{formatEnum(value)}</span>;
 }

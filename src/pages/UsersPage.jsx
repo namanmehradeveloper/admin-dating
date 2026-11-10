@@ -185,12 +185,12 @@ export default function UsersPage() {
     <div className="users-page">
       <PageHeader
         title="Users"
-        subtitle="Members, dating cards and photo review in one list."
+        subtitle="Manage member accounts, dating profiles, and photo reviews."
         actions={
           <>
             <button type="button" className="button button--secondary" onClick={exportExcel} disabled={!list.items.length}>
               <FileSpreadsheet size={15} aria-hidden />
-              Download Excel
+              Export CSV
             </button>
             <button type="button" className="button button--primary" onClick={() => setAddOpen(true)}>
               <Plus size={15} aria-hidden />
@@ -225,7 +225,7 @@ export default function UsersPage() {
             value={searchText}
             onChange={setSearchText}
             onClear={() => setFilters((current) => ({ ...current, q: '' }))}
-            placeholder="Name, email, phone or usr_…"
+            placeholder="Search name, email, phone, or user ID"
           />
           <button type="submit" className="button button--primary">
             Search

@@ -56,11 +56,11 @@ export default function SettingsPage() {
 
   return (
     <div className="admin-page">
-      <PageHeader title="Settings" />
+      <PageHeader title="Settings" subtitle="Manage platform limits and review system configuration." />
       <Notice onDismiss={() => setNotice(null)}>{notice}</Notice>
 
       <section className="card">
-        <h2>Limits</h2>
+        <h2>Platform limits</h2>
         <form
           className="form-grid"
           onSubmit={(event) => {
@@ -94,7 +94,7 @@ export default function SettingsPage() {
       </section>
 
       <section className="card">
-        <h2>System</h2>
+        <h2>System information</h2>
         <DetailList
           rows={[
             ['Environment', data.system.environment],

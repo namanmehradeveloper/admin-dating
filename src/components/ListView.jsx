@@ -4,6 +4,7 @@
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ErrorState from './ErrorState.jsx';
+import EmptyState from './EmptyState.jsx';
 import LoadingState from './LoadingState.jsx';
 
 function columnKey(column, index) {
@@ -27,12 +28,12 @@ export default function ListView({ list, columns, renderRow, emptyMessage, table
 
   return (
     <>
-      <div className={`table-wrap table-wrap--data ${wrapClassName}`.trim()}>
+      <div className={`table-wrap table-wrap--data ${wrapClassName}`.trim()} tabIndex={0} role="region" aria-label="Data table, scroll horizontally to view all columns">
         <table className={`table data-table ${tableClassName}`.trim()}>
           <thead>
             <tr>
               {columns.map((column, index) => (
-                <th key={columnKey(column, index)} className={typeof column === 'object' ? column.className : undefined}>
+                <th scope="col" key={columnKey(column, index)} className={typeof column === 'object' ? column.className : undefined}>
                   {renderColumnHeader(column)}
                 </th>
               ))}
@@ -41,7 +42,7 @@ export default function ListView({ list, columns, renderRow, emptyMessage, table
           <tbody>
             {isEmpty ? (
               <tr className="table__row--empty">
-                <td colSpan={columns.length}>{emptyMessage}</td>
+                <td colSpan={columns.length}><EmptyState message={emptyMessage} /></td>
               </tr>
             ) : (
               list.items.map(renderRow)

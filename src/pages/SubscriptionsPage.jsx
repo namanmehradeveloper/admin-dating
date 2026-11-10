@@ -33,7 +33,7 @@ export default function SubscriptionsPage() {
 
   return (
     <div className="admin-page">
-      <PageHeader title="Subscriptions" subtitle="Entitlements recorded by the server. They change only through verified store purchases." />
+      <PageHeader title="Subscriptions" subtitle="Review member plans and entitlements from verified store purchases." />
       <Notice tone="warning">App Store / Google Play verification is not configured yet, so no new purchases can be recorded.</Notice>
       <FilterToolbar
         label="State"
@@ -51,7 +51,7 @@ export default function SubscriptionsPage() {
             value={searchText}
             onChange={setSearchText}
             onClear={() => setFilters((current) => ({ ...current, q: '' }))}
-            placeholder="Name, email or usr_…"
+            placeholder="Search name, email, or user ID"
           />
           <button type="submit" className="button button--primary">
             Search

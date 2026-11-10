@@ -53,7 +53,7 @@ export default function ReportsPage() {
             value={searchText}
             onChange={setSearchText}
             onClear={() => setFilters((current) => ({ ...current, q: '' }))}
-            placeholder="Report id, usr_… or target id"
+            placeholder="Search report, user, or target ID"
           />
           <button type="submit" className="button button--primary">
             Search

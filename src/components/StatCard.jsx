@@ -1,6 +1,7 @@
 // One number on the dashboard, optionally linking to the related page.
 // Optional Lucide icon + tone matches the Dating Cloud KPI card pattern.
 
+import { ChartNoAxesCombined } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatNumber } from '../utils/format.js';
 
@@ -10,7 +11,7 @@ function displayValue(value) {
   return value;
 }
 
-export default function StatCard({ label, value, hint, to, icon: Icon, tone = 'primary' }) {
+export default function StatCard({ label, value, hint, to, icon: Icon = ChartNoAxesCombined, tone = 'primary' }) {
   const body = (
     <>
       <div className="stat-card__top">

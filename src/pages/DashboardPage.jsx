@@ -1,107 +1,23 @@
-// Live admin overview — action queue, KPI deltas, charts, activity feed.
-
-import { useMemo, useState } from 'react';
+// Reporting presentation; existing API modules and operational links are retained.
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import {
-  Flag,
-  Heart,
-  MessageSquare,
-  ShieldCheck,
-  Ticket,
-  UserPlus,
-} from 'lucide-react';
+import { Activity, BarChart3, Flag, Heart, MessageSquare, ShieldCheck, Ticket, UserPlus, Users, Crown, TrendingUp, PieChart as PieIcon } from 'lucide-react';
 import { getDashboard } from '../api/dashboard.api.js';
-import { CHART_COLORS, formatDay } from '../components/charts/chartTheme.js';
-import DailyActivityChart from '../components/charts/DailyActivityChart.jsx';
-import DonutChart from '../components/charts/DonutChart.jsx';
-import HorizontalBarChart from '../components/charts/HorizontalBarChart.jsx';
-import SparkKpiCard from '../components/dashboard/SparkKpiCard.jsx';
-import ErrorState from '../components/ErrorState.jsx';
-import LoadingState from '../components/LoadingState.jsx';
 import PageHeader from '../components/PageHeader.jsx';
+import ErrorState from '../components/ErrorState.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
 import UserCell from '../components/UserCell.jsx';
 import { useApi } from '../hooks/useApi.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { formatEnum, formatNumber, formatRelativeTime } from '../utils/format.js';
-
-const RANGES = [
-  { value: 1, label: 'Today' },
-  { value: 7, label: '7d' },
-  { value: 30, label: '30d' },
-  { value: 90, label: '90d' },
-];
-
-function localYmd(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function rangeFromPreset(days) {
-  const to = new Date();
-  const from = new Date();
-  from.setDate(to.getDate() - (days - 1));
-  return { from: localYmd(from), to: localYmd(to), preset: days };
-}
-
-function seriesFromTrends(trends, key) {
-  return (trends ?? []).map((day) => day[key] ?? 0);
-}
-
-function SummaryTrendCard({ title, stats, dataKey, color, trends, to }) {
-  return (
-    <section className="card summary-card">
-      <div className="card__header">
-        <div>
-          <h2>{title}</h2>
-          <span className="muted small">Last {trends?.length ?? 0} days</span>
-        </div>
-        {to && (
-          <Link to={to} className="button button--secondary button--small">
-            Open
-          </Link>
-        )}
-      </div>
-      <div className="summary-card__stats">
-        {stats.map((stat) => (
-          <div key={stat.label} className="summary-card__stat">
-            <span>{stat.label}</span>
-            <strong>{typeof stat.value === 'number' ? formatNumber(stat.value) : stat.value}</strong>
-          </div>
-        ))}
-      </div>
-      <ResponsiveContainer width="100%" height={140}>
-        <AreaChart data={trends} margin={{ top: 8, right: 4, left: -20, bottom: 0 }}>
-          <defs>
-            <linearGradient id={`summary-${dataKey}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.35} />
-              <stop offset="100%" stopColor={color} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid stroke={CHART_COLORS.grid} strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="date" tickFormatter={formatDay} hide />
-          <YAxis allowDecimals={false} tick={{ fill: CHART_COLORS.text, fontSize: 11 }} axisLine={false} tickLine={false} width={32} />
-          <Tooltip
-            content={({ active, payload, label }) =>
-              active && payload?.length ? (
-                <div className="chart-tooltip">
-                  <span className="chart-tooltip__label">{formatDay(label)}</span>
-                  <strong>
-                    {formatNumber(payload[0].value)} {title.toLowerCase()}
-                  </strong>
-                </div>
-              ) : null
-            }
-          />
-          <Area type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2} fill={`url(#summary-${dataKey})`} />
-        </AreaChart>
-      </ResponsiveContainer>
-    </section>
-  );
-}
+import DateRange, { useInsightRange } from '../components/insights/DateRange.jsx';
+import TimeChart from '../components/insights/TimeChart.jsx';
+import MixChart from '../components/insights/MixChart.jsx';
+import CategoryChart from '../components/insights/CategoryChart.jsx';
+import ReportingAvailability from '../components/insights/ReportingAvailability.jsx';
+import { MetricCard, InsightsSkeleton, RefreshNotice } from '../components/insights/Primitives.jsx';
+import { COLORS, count, number, datedSeries, signupSeries, subscriptionMix, rangeLabel, checkedPayload } from '../components/insights/data.js';
+import '../components/insights/insights.css';
 
 function ActionQueue({ moderation, support }) {
   const items = [
@@ -278,312 +194,59 @@ function FollowUpList({ items }) {
 
 export default function DashboardPage() {
   const { isAdmin } = useAuth();
-  const initialRange = rangeFromPreset(7);
-  const [fromDate, setFromDate] = useState(initialRange.from);
-  const [toDate, setToDate] = useState(initialRange.to);
-  const [preset, setPreset] = useState(7);
-  const [applied, setApplied] = useState({ from: initialRange.from, to: initialRange.to });
-
-  const queryKey = `${applied.from}:${applied.to}`;
-  const { data, error, isLoading, reload } = useApi(
-    () => getDashboard({ from: applied.from, to: applied.to }),
-    [queryKey],
-  );
-
-  const todayYmd = localYmd();
-  const rangeInvalid = !fromDate || !toDate || fromDate > toDate;
-
-  function applyPreset(days) {
-    const next = rangeFromPreset(days);
-    setPreset(days);
-    setFromDate(next.from);
-    setToDate(next.to);
-    setApplied({ from: next.from, to: next.to });
-  }
-
-  function applyCustomRange(event) {
-    event.preventDefault();
-    if (rangeInvalid) return;
-    setPreset(null);
-    setApplied({ from: fromDate, to: toDate });
-  }
-
-  if (isLoading && !data) return <LoadingState />;
-  if (error && !data) return <ErrorState message={error} onRetry={reload} />;
-
-  const { users, moderation, matches, messages, support, subscriptions, breakdowns, revenue, recent, followUp, trends, changes } =
-    data;
-  const signupSpark = (data.signupsByDay ?? []).map((day) => day.count);
-  const matchSpark = seriesFromTrends(trends, 'matches');
-  const messageSpark = seriesFromTrends(trends, 'messages');
-  const signupTrendSpark = seriesFromTrends(trends, 'signups');
-  const rangeFrom = data.from ?? applied.from;
-  const rangeTo = data.to ?? applied.to;
-  const rangeDays = data.range ?? trends?.length ?? 0;
-  const rangeLabel = rangeFrom === rangeTo ? rangeFrom : `${rangeFrom} → ${rangeTo}`;
-  const rangeSpan = rangeDays === 1 ? 'today' : `${rangeDays}d`;
-
-  const moderationQueue = [
-    { key: 'openReports', name: 'Open reports', value: moderation.openReports, color: CHART_COLORS.red },
-    { key: 'inReviewReports', name: 'Reports in review', value: moderation.inReviewReports, color: CHART_COLORS.amber },
-    { key: 'pendingVerifications', name: 'Pending verifications', value: moderation.pendingVerifications, color: CHART_COLORS.primary },
-    { key: 'openTickets', name: 'Open support tickets', value: support.openTickets, color: CHART_COLORS.teal },
+  const range = useInsightRange();
+  const { data: result, error, isLoading, reload } = useApi(async () => ({
+    payload: checkedPayload(await getDashboard({ from: range.applied.from, to: range.applied.to })),
+    period: { ...range.applied },
+  }), [range.key]);
+  const data = result?.payload;
+  const period = result?.period || range.applied;
+  const label = rangeLabel(period);
+  const { users = {}, moderation = {}, matches = {}, messages = {}, support = {}, subscriptions = {}, breakdowns = {}, revenue, recent, followUp, changes = {} } = data || {};
+  const trends = datedSeries(data?.trends, ['signups', 'matches', 'messages'], period);
+  const growth = signupSeries(data, period);
+  const statusItems = (counts, colors) => Object.entries(counts || {}).map(([key, value], i) => ({ key, name: formatEnum(key), value, color: colors[key] || Object.values(COLORS)[i % 6] }));
+  const queue = [
+    { key: 'reports', name: 'Open reports', value: moderation.openReports, color: COLORS.pink },
+    { key: 'review', name: 'Reports in review', value: moderation.inReviewReports, color: COLORS.amber },
+    { key: 'verify', name: 'Pending verifications', value: moderation.pendingVerifications, color: COLORS.purple },
+    { key: 'tickets', name: 'Open support tickets', value: support.openTickets, color: COLORS.teal },
   ];
-  const reportReasons = Object.entries(breakdowns.reportsByReason).map(([key, value]) => ({ key, value }));
-  const likeMatchRate =
-    matches.createdInRange > 0 && users.newInRange > 0
-      ? `${Math.round((matches.createdInRange / Math.max(users.newInRange, 1)) * 10) / 10}x`
-      : '—';
-
-  return (
-    <div className={`dashboard-page${isLoading ? ' is-refreshing' : ''}`}>
-      <PageHeader
-        title="Dashboard"
-        subtitle={`Live platform overview · ${rangeLabel} (${rangeSpan}) · updated ${formatRelativeTime(data.generatedAt)}`}
-      />
-
-      <section className="users-toolbar card dashboard-date-bar">
-        <div className="users-toolbar__chips" role="tablist" aria-label="Quick date range">
-          {RANGES.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              role="tab"
-              aria-selected={preset === option.value}
-              className={`users-chip ${preset === option.value ? 'is-active' : ''}`}
-              onClick={() => applyPreset(option.value)}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-        <form className="users-toolbar__form dashboard-date-bar__form" onSubmit={applyCustomRange}>
-          <label className="field field--inline">
-            <span>From</span>
-            <input
-              type="date"
-              value={fromDate}
-              max={toDate || todayYmd}
-              onChange={(event) => {
-                setFromDate(event.target.value);
-                setPreset(null);
-              }}
-            />
-          </label>
-          <label className="field field--inline">
-            <span>To</span>
-            <input
-              type="date"
-              value={toDate}
-              min={fromDate || undefined}
-              max={todayYmd}
-              onChange={(event) => {
-                setToDate(event.target.value);
-                setPreset(null);
-              }}
-            />
-          </label>
-          <button type="submit" className="button button--primary" disabled={rangeInvalid || isLoading}>
-            Apply
-          </button>
-          {rangeInvalid && <span className="form-error">Choose a valid from → to range.</span>}
-        </form>
-      </section>
-
-      {error && data && (
-        <p className="drawer-notice" role="status">
-          Could not refresh: {error}. Showing last loaded data.
-        </p>
-      )}
-
+  return <div className="dashboard-page insights-page">
+    <PageHeader title="Platform overview" subtitle="A clear view of your community, growth, and daily activity." />
+    <DateRange range={range} loading={isLoading} onRefresh={reload} todayOption />
+    {!data ? (isLoading ? <InsightsSkeleton /> : <ErrorState message={error || 'No reporting data is available.'} onRetry={reload} />) : <>
+      <div className="insight-period"><span><i />Showing {label}</span><span>Updated {formatRelativeTime(data.generatedAt)}</span></div>
+      <RefreshNotice error={error} loading={isLoading} onRetry={reload} label={label} />
+      <div className="insight-metrics">
+        <MetricCard label="Total members" value={count(users.total)} scope="Current total" hint={`${number(users.newToday)} joined today · ${number(users.onlineNow)} online now`} icon={Users} to="/users" />
+        <MetricCard label="New members" value={count(users.newInRange)} delta={changes.newUsers} hint="Registrations during the selected period" icon={UserPlus} color="blue" to="/users" />
+        <MetricCard label="Active users" value={count(users.activeInRange ?? (period.preset === 7 ? users.activeLast7Days : undefined))} delta={changes.activeUsers} hint="Members active during the selected period" icon={Activity} color="teal" to="/users" />
+        <MetricCard label="Active Plus" value={count(subscriptions.activePremium)} scope="Current total" hint="Members with active Plus access" icon={Crown} color="amber" to={isAdmin ? '/subscriptions' : undefined} />
+        <MetricCard label="Matches created" value={count(matches.createdInRange)} delta={changes.matches} hint={`${number(matches.total)} total · ${number(matches.active)} active · ${number(matches.createdToday)} today`} icon={Heart} color="pink" to="/matches" />
+        <MetricCard label="Messages sent" value={count(messages.sentInRange ?? (period.preset === 7 ? messages.sentLast7Days : undefined))} delta={changes.messages} hint={`${number(messages.sentToday)} today · ${number(messages.sentLast7Days)} in the last 7 days`} icon={MessageSquare} color="teal" to="/messaging" />
+        <MetricCard label="Verified members" value={count(users.verified)} scope="Current total" hint={`${number(moderation.pendingVerifications)} awaiting verification`} icon={ShieldCheck} to="/verifications" />
+        <MetricCard label="Open reports" value={count(moderation.openReports)} scope="Current queue" hint={`${number(moderation.inReviewReports)} in review · ${number(support.openTickets)} open tickets`} icon={Flag} color="pink" to="/reports" />
+      </div>
+      <div className="insight-grid insight-grid--growth">
+        <TimeChart title="User growth" subtitle="New registrations each day" data={growth} series={[{ key: 'signups', label: 'New members', color: COLORS.purple }]} icon={TrendingUp} />
+        <MixChart title="Subscription mix" subtitle="Current member snapshot · unaffected by dates" items={subscriptionMix(users.total, subscriptions.activePremium)} centerLabel="Members" icon={Crown} footer="Other members = total members minus active Plus. Subscription history is not supplied." />
+      </div>
+      <TimeChart title="Community engagement" subtitle="Matches and messages recorded each day" data={trends} series={[{ key: 'matches', label: 'Matches', color: COLORS.pink }, { key: 'messages', label: 'Messages', color: COLORS.teal }]} defaultType="line" icon={Activity} />
+      <TimeChart title="Daily activity" subtitle="Compare registrations, matches, and messages" data={trends} series={[{ key: 'signups', label: 'New members', color: COLORS.purple }, { key: 'matches', label: 'Matches', color: COLORS.pink }, { key: 'messages', label: 'Messages', color: COLORS.teal }]} defaultType="bar" icon={BarChart3} />
+      <div className="insight-section-heading"><div><h2>Community health</h2><p>Current account and moderation snapshots</p></div></div>
       <ActionQueue moderation={moderation} support={support} />
-
-      <div className="spark-kpi-grid spark-kpi-grid--hero">
-        <SparkKpiCard
-          size="hero"
-          label="Users"
-          value={users.total}
-          hint={`${formatNumber(users.newToday)} today · ${formatNumber(users.onlineNow ?? 0)} online`}
-          to="/users"
-          sparkData={signupSpark.length ? signupSpark : signupTrendSpark}
-          sparkColor={CHART_COLORS.primary}
-          tone="primary"
-        />
-        <SparkKpiCard
-          size="hero"
-          label="Matches"
-          value={matches.total}
-          hint={`${formatNumber(matches.active)} active · ${formatNumber(matches.createdInRange)} in range`}
-          delta={changes?.matches}
-          to="/matches"
-          sparkData={matchSpark}
-          sparkColor={CHART_COLORS.pink}
-          tone="danger"
-        />
-        <SparkKpiCard
-          size="hero"
-          label="Messages"
-          value={messages.sentInRange ?? messages.sentLast7Days}
-          hint={`${formatNumber(messages.sentToday)} today`}
-          delta={changes?.messages}
-          to="/messaging"
-          sparkData={messageSpark}
-          sparkColor={CHART_COLORS.teal}
-          tone="teal"
-        />
-        <SparkKpiCard
-          size="hero"
-          label="Open reports"
-          value={moderation.openReports}
-          hint={`${formatNumber(moderation.inReviewReports)} in review · ${formatNumber(support.openTickets)} tickets`}
-          to="/reports"
-          sparkData={messageSpark}
-          sparkColor={CHART_COLORS.red}
-          tone="danger"
-        />
+      <div className="insight-grid">
+        <MixChart title="Account status" subtitle="Current member accounts" items={statusItems(breakdowns.accountStatus, { ACTIVE: COLORS.teal, WARNED: COLORS.amber, SUSPENDED: COLORS.pink, BANNED: COLORS.muted })} icon={Users} />
+        <MixChart title="Verification status" subtitle="Current verification coverage" items={statusItems(breakdowns.verificationStatus, { VERIFIED: COLORS.purple, PENDING: COLORS.amber, REJECTED: COLORS.pink, NONE: COLORS.muted })} icon={ShieldCheck} />
+        <CategoryChart title="Needs attention" subtitle="Current moderation and support queues" items={queue} icon={Flag} />
+        <CategoryChart title="Open reports by reason" subtitle="Current report categories" items={statusItems(breakdowns.reportsByReason, {})} icon={PieIcon} />
       </div>
-
       <div className="dashboard-grid-2">
-        <section className="card">
-          <div className="card__header">
-            <div>
-              <h2>Top follow-up</h2>
-              <span className="muted small">Members waiting on staff: reports, selfies, photos, tickets</span>
-            </div>
-            <Link to="/reports" className="button button--secondary button--small">
-              Open queues
-            </Link>
-          </div>
-          <FollowUpList items={followUp} />
-        </section>
-
-        <section className="card">
-          <div className="card__header">
-            <div>
-              <h2>Log activities</h2>
-              <span className="muted small">Joins, reports, verifications, matches, tickets</span>
-            </div>
-            {isAdmin ? (
-              <Link to="/audit-logs" className="button button--secondary button--small">
-                Audit logs
-              </Link>
-            ) : (
-              <Link to="/users" className="button button--secondary button--small">
-                View users
-              </Link>
-            )}
-          </div>
-          <ActivityFeed
-            users={recent?.users}
-            reports={recent?.reports}
-            verifications={recent?.verifications}
-            matches={recent?.matches}
-            tickets={recent?.tickets}
-          />
-        </section>
+        <section className="card"><div className="card__header"><div><h2>Priority follow-ups</h2><span className="muted small">Members awaiting a review or response</span></div><Link to="/reports" className="button button--secondary button--small">Open queues</Link></div><FollowUpList items={followUp} /></section>
+        <section className="card"><div className="card__header"><div><h2>Recent activity</h2><span className="muted small">The latest updates across your community</span></div>{isAdmin ? <Link to="/audit-logs" className="button button--secondary button--small">Audit logs</Link> : <Link to="/users" className="button button--secondary button--small">View users</Link>}</div><ActivityFeed users={recent?.users} reports={recent?.reports} verifications={recent?.verifications} matches={recent?.matches} tickets={recent?.tickets} /></section>
       </div>
-
-      <div className="spark-kpi-grid spark-kpi-grid--secondary" aria-label="More stats">
-        <SparkKpiCard
-          label="Active users"
-          value={users.activeInRange ?? users.activeLast7Days}
-          hint={`Active in selected range (${rangeDays}d)`}
-          delta={changes?.activeUsers}
-          to="/users"
-          sparkData={signupTrendSpark}
-          sparkColor={CHART_COLORS.green}
-          tone="success"
-        />
-        <SparkKpiCard
-          label="New registrations"
-          value={users.newInRange ?? users.newLast7Days}
-          hint={`${formatNumber(users.newToday)} today`}
-          delta={changes?.newUsers}
-          to="/users"
-          sparkData={signupTrendSpark}
-          sparkColor={CHART_COLORS.teal}
-          tone="teal"
-        />
-        <SparkKpiCard
-          label="Verified members"
-          value={users.verified}
-          hint={`${formatNumber(moderation.pendingVerifications)} pending review`}
-          to="/verifications"
-          sparkData={signupSpark}
-          sparkColor={CHART_COLORS.primary}
-          tone="primary"
-        />
-        <SparkKpiCard
-          label="Plus subscribers"
-          value={subscriptions.activePremium}
-          hint={
-            revenue?.billingConfigured
-              ? `${revenue.currency ?? 'INR'} billing ready`
-              : 'Billing ledger not configured'
-          }
-          to={isAdmin ? '/subscriptions' : undefined}
-          sparkData={matchSpark}
-          sparkColor={CHART_COLORS.amber}
-          tone="warning"
-        />
-      </div>
-
-      <div className="dashboard-grid-3">
-        <DonutChart title="Account status" counts={breakdowns.accountStatus} centerLabel="Members" />
-        <DonutChart title="Verification status" counts={breakdowns.verificationStatus} centerLabel="Members" />
-        <HorizontalBarChart title="Needs attention" items={moderationQueue} emptyText="Queue is clear" />
-        <HorizontalBarChart title="Open reports by reason" items={reportReasons} color={CHART_COLORS.red} emptyText="No open reports" />
-      </div>
-
-      <DailyActivityChart data={trends} days={data.range} />
-
-      <div className="dashboard-summary-grid">
-        <SummaryTrendCard
-          title="Users"
-          dataKey="signups"
-          color={CHART_COLORS.primary}
-          trends={trends}
-          to="/users"
-          stats={[
-            { label: 'Total', value: users.total },
-            { label: 'Today', value: users.newToday },
-            { label: 'New in range', value: users.newInRange },
-            { label: 'Active', value: users.activeInRange },
-          ]}
-        />
-        <SummaryTrendCard
-          title="Matches"
-          dataKey="matches"
-          color={CHART_COLORS.pink}
-          trends={trends}
-          to="/matches"
-          stats={[
-            { label: 'Total', value: matches.total },
-            { label: 'Active', value: matches.active },
-            { label: 'Today', value: matches.createdToday },
-            { label: 'In range', value: matches.createdInRange },
-          ]}
-        />
-        <SummaryTrendCard
-          title="Messages"
-          dataKey="messages"
-          color={CHART_COLORS.teal}
-          trends={trends}
-          to="/messaging"
-          stats={[
-            { label: 'Today', value: messages.sentToday },
-            { label: '7d', value: messages.sentLast7Days },
-            { label: 'In range', value: messages.sentInRange },
-            { label: 'Match intensity', value: likeMatchRate },
-          ]}
-        />
-      </div>
-
-      {revenue && !revenue.billingConfigured && (
-        <p className="muted small">
-          {revenue.note} Plus subscriber count is shown above until a payment ledger is available.
-        </p>
-      )}
-    </div>
-  );
+      <ReportingAvailability revenue={revenue} isAdmin={isAdmin} />
+    </>}
+  </div>;
 }

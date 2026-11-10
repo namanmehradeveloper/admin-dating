@@ -96,7 +96,7 @@ export default function AuditLogsPage() {
               setForm((current) => ({ ...current, actorId: '' }));
               setFilters((current) => ({ ...current, actorId: '' }));
             }}
-            placeholder="usr_…"
+            placeholder="Enter user ID"
             maxLength={64}
           />
           <SearchField
@@ -109,7 +109,7 @@ export default function AuditLogsPage() {
               setForm((current) => ({ ...current, targetId: '' }));
               setFilters((current) => ({ ...current, targetId: '' }));
             }}
-            placeholder="usr_…, rep_…"
+            placeholder="Enter user or report ID"
             maxLength={64}
           />
           <button type="submit" className="button button--primary">

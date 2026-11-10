@@ -23,7 +23,7 @@ export default function CallsPage() {
         subtitle="Operational diagnostics for calling. No unauthorized recording or content access."
       />
 
-      <Notice tone="warning">Integration blocked: calling is not implemented in this API yet.</Notice>
+      <Notice tone="warning">Voice and video calling are not yet available on this platform.</Notice>
 
       <div className="grid-2">
         <section className="card">
@@ -48,7 +48,7 @@ export default function CallsPage() {
         </section>
 
         <section className="card">
-          <h2>Coming online later</h2>
+          <h2>Available after integration</h2>
           <ul className="integration-checklist">
             <li>
               <span className="integration-checklist__mark" aria-hidden />

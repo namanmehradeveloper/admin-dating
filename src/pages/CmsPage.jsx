@@ -140,7 +140,7 @@ export default function CmsPage() {
             value={searchText}
             onChange={setSearchText}
             onClear={() => setFilters((current) => ({ ...current, q: '' }))}
-            placeholder="Title or slug…"
+            placeholder="Search title or content slug"
           />
           <button type="submit" className="button button--primary">
             Search

@@ -54,7 +54,7 @@ function CreateReferralDialog({ open, onClose, onCreated }) {
       </label>
       <label className="field">
         <span>Owner user id</span>
-        <input value={ownerUserId} onChange={(event) => setOwnerUserId(event.target.value)} placeholder="usr_…" maxLength={64} />
+        <input value={ownerUserId} onChange={(event) => setOwnerUserId(event.target.value)} placeholder="Enter user ID" maxLength={64} />
       </label>
     </ConfirmDialog>
   );
@@ -107,7 +107,7 @@ export default function ReferralsPage() {
             value={searchText}
             onChange={setSearchText}
             onClear={() => setFilters({ q: '' })}
-            placeholder="Code, owner name, email or usr_…"
+            placeholder="Search code, owner, email, or user ID"
           />
           <button type="submit" className="button button--primary">
             Search

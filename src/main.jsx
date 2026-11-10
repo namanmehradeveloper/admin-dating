@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import './index.css';
+import './redesign.css';
 
 const storedTheme = localStorage.getItem('dc_admin_theme');
 const initialTheme =

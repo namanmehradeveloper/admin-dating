@@ -230,7 +230,7 @@ export default function StaffPage() {
               value={searchText}
               onChange={setSearchText}
               onClear={() => setFilters((current) => ({ ...current, q: '' }))}
-              placeholder="Staff email…"
+              placeholder="Search staff email"
             />
             <button type="submit" className="button button--primary">
               Search

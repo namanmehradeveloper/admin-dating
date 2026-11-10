@@ -404,7 +404,7 @@ export default function SwipesPage() {
           <StatCard
             label="Total swipes"
             value={stats.data.totalSwipes}
-            hint={`Last ${stats.data.days} days · ${formatNumber(stats.data.uniqueSwingers)} active swingers`}
+            hint={`Last ${stats.data.days} days · ${formatNumber(stats.data.uniqueSwingers)} active members`}
           />
           <StatCard label="Likes" value={stats.data.likes} hint={`${formatNumber(stats.data.likeRate)}% of all swipes`} />
           <StatCard label="Passes" value={stats.data.passes} hint={`${formatNumber(stats.data.passRate)}% of all swipes`} />
@@ -475,7 +475,7 @@ export default function SwipesPage() {
                         : `${stats.data?.entitlements.freeDailyRewinds} free / day`,
                     ],
                     ['Abuse threshold / 24h', stats.data?.entitlements.abuseThreshold],
-                    ['Unique swingers (range)', formatNumber(stats.data?.uniqueSwingers)],
+                    ['Unique members in range', formatNumber(stats.data?.uniqueSwingers)],
                   ]}
                 />
               </section>
@@ -696,7 +696,7 @@ export default function SwipesPage() {
                   <SearchField
                     value={userId}
                     onChange={setUserId}
-                    placeholder="usr_…"
+                    placeholder="Enter user ID"
                     maxLength={64}
                   />
                   <label className="field field--inline">

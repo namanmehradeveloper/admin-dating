@@ -48,8 +48,8 @@ export default function LoginPage() {
           </div>
 
           <div className="login__hero">
-            <h1>Moderate. Protect. Keep the community safe.</h1>
-            <p>Sign in to manage members, reports, moderation queues, and platform health from one place.</p>
+            <h1>A better space for meaningful connections.</h1>
+            <p>Your workspace for a trusted community. Manage members, support your team, and keep every connection moving forward.</p>
           </div>
 
           <ul className="login__points">
@@ -76,7 +76,7 @@ export default function LoginPage() {
                 <Activity size={16} strokeWidth={2.2} />
               </span>
               <div>
-                <strong>Live ops</strong>
+                <strong>Platform oversight</strong>
                 <span>Dashboards and staff tools</span>
               </div>
             </li>
@@ -86,11 +86,12 @@ export default function LoginPage() {
 
       <main className="login__main">
         <form className="login__card" onSubmit={handleSubmit} noValidate>
-          <h2>Welcome back</h2>
-          <p className="muted">Sign in with your staff account.</p>
+          <span className="login__eyebrow">STAFF SIGN IN</span>
+          <h2>Welcome back.</h2>
+          <p className="muted">Welcome to DatingCloud. Enter your staff credentials to continue.</p>
 
           <label className="field">
-            <span>Email</span>
+            <span>Work email</span>
             <input
               type="email"
               autoComplete="username"
@@ -105,7 +106,7 @@ export default function LoginPage() {
             <input
               type="password"
               autoComplete="current-password"
-              placeholder="••••••••"
+              placeholder="Enter your password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
@@ -118,8 +119,9 @@ export default function LoginPage() {
             </p>
           )}
           <button type="submit" className="button button--primary button--block" disabled={isSubmitting || !email || !password}>
-            {isSubmitting ? 'Signing in…' : 'Sign in'}
+            {isSubmitting ? 'Signing in…' : 'Sign in to your workspace'}
           </button>
+          <p className="login__footnote"><ShieldCheck size={14} aria-hidden /> Authorized staff access only</p>
         </form>
       </main>
     </div>
