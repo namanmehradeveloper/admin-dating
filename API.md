@@ -23,24 +23,22 @@ It covers every member-facing API under `/api/v1`, auth, uploads, chat, Socket.I
 
 | Environment | Base URL |
 |-------------|----------|
-| **ngrok (current)** | `https://figure-cancel-snowiness.ngrok-free.dev/api/v1` |
+| **Production (Render)** | `https://dating-backend-k53l.onrender.com/api/v1` |
 | Local (same machine) | `http://127.0.0.1:5050/api/v1` |
 
-**Use the ngrok URL on a real device / emulator** so the phone can reach your local backend.
+Use the **production** URL for device / emulator builds against the live API. Use local only when the backend runs on the same machine.
 
 | Service | URL |
 |---------|-----|
-| REST API | `https://figure-cancel-snowiness.ngrok-free.dev/api/v1` |
-| Uploaded images | `https://figure-cancel-snowiness.ngrok-free.dev/uploads/...` |
-| Socket.IO | `wss://figure-cancel-snowiness.ngrok-free.dev/v1` (namespace `/v1`, WebSocket only) |
+| REST API | `https://dating-backend-k53l.onrender.com/api/v1` |
+| Uploaded images | `https://dating-backend-k53l.onrender.com/uploads/...` (or Cloudinary URLs from the API) |
+| Socket.IO | `wss://dating-backend-k53l.onrender.com/v1` (namespace `/v1`, WebSocket only) |
 
 Example health check (no auth):
 
 ```
-GET https://figure-cancel-snowiness.ngrok-free.dev/api/v1/health
+GET https://dating-backend-k53l.onrender.com/api/v1/health
 ```
-
-> The free ngrok hostname changes when the tunnel restarts. If DNS / connection fails, ask for the latest `APP_URL` from `backend/.env` and update the app base URL (REST + image host + Socket.IO).
 
 ### Headers
 
@@ -49,12 +47,9 @@ GET https://figure-cancel-snowiness.ngrok-free.dev/api/v1/health
 | `Content-Type` | JSON bodies | `application/json` |
 | `Authorization` | All protected routes | `Bearer <accessToken>` |
 | `Idempotency-Key` | Swipes + send message | UUID string |
-| `ngrok-skip-browser-warning` | Browser / Postman via free ngrok | `true` or any value |
 
 CORS allows: `Authorization`, `Content-Type`, `Idempotency-Key`.  
 Response may include: `X-Request-Id`, `Retry-After`.
-
-**ngrok free tip:** Opening the URL in a browser may show an ngrok interstitial page. Native mobile apps usually skip it. For Postman or web testing, send header `ngrok-skip-browser-warning: true`.
 
 ### Auth model
 
@@ -128,10 +123,10 @@ Example: `GET /conversations?limit=20&cursor=eyJ...`
 Images uploaded via `/media/upload` are served under:
 
 ```
-https://figure-cancel-snowiness.ngrok-free.dev/uploads/...
+https://dating-backend-k53l.onrender.com/uploads/...
 ```
 
-(or `{HOST}/uploads/...` for local). Use the URL returned in the upload response when showing images — with ngrok that host should already match `APP_URL`.
+(or `{HOST}/uploads/...` for local, or a Cloudinary URL). Prefer the URL returned in the upload response when showing images.
 
 ### Idempotency
 
@@ -989,7 +984,7 @@ Acks look like `{ ok: true }` or `{ ok: false, error: { code, message } }`.
 
 ## 15. Mobile client checklist
 
-- [ ] Base URL = ngrok (device) or `http://127.0.0.1:5050` (simulator on same machine)  
+- [ ] Base URL = production Render API or `http://127.0.0.1:5050` (simulator on same machine)  
 - [ ] Persist `accessToken` + `refreshToken` securely  
 - [ ] Attach `Authorization: Bearer <accessToken>` on every protected call  
 - [ ] On `401` / `UNAUTHENTICATED` → `POST /auth/token/refresh`, store new tokens, retry once  

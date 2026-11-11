@@ -10,7 +10,6 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 5173,
     strictPort: true,
-    allowedHosts: ['.ngrok-free.dev', '.ngrok-free.app'],
     watch: { ignored: ['**/backend/**'] },
   },
   preview: {
