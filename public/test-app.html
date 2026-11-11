@@ -2,8 +2,8 @@
 <!--
   Dating Cloud member test app (dark, mobile-first).
   OTP login, profile onboarding, discovery, likes, matches and chat.
-  Served by the admin dev server at http://127.0.0.1:5173/test-app.html (or its ngrok URL);
-  the API, uploads and Socket.IO are called on the page's own origin and Vite proxies them to port 5050.
+  Served by the admin dev server at http://127.0.0.1:5173/test-app.html (or its ngrok URL).
+  Calls the Express API directly (default http://127.0.0.1:5050). Override with window.DATING_CLOUD_BACKEND_URL.
   Development/testing only; OTP is configured server-side.
   Sessions are per-tab using sessionStorage for two-member testing.
 -->
@@ -295,11 +295,10 @@ details.faq p { margin-top: 8px; color: var(--muted); }
 <nav id="bottom-nav" class="bottom-nav" aria-label="Main" hidden></nav>
 <div id="toasts"></div>
 
-<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
 <script>
-// Same origin as the page: the Vite dev server proxies /api, /uploads and /socket.io to the backend.
-// Set window.DATING_CLOUD_BACKEND_URL before this script to call another backend directly.
-const API_ORIGIN = (window.DATING_CLOUD_BACKEND_URL || window.location.origin).replace(/\/$/, '');
+// Direct backend calls (no Vite proxy). Override with window.DATING_CLOUD_BACKEND_URL when needed.
+const API_ORIGIN = (window.DATING_CLOUD_BACKEND_URL || 'http://127.0.0.1:5050').replace(/\/$/, '');
 const API = `${API_ORIGIN}/api/v1`;
 const TERMS_VERSION = '2026-01';
 const TYPING_INTERVAL_MS = 3000;
