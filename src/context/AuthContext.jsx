@@ -1,10 +1,12 @@
-// Admin session state: who is signed in, login/logout, and restoring the session after a reload.
+// Admin session state: who is signed in, login/logout, restoring after a reload, and staying in
+// sync when another admin tab logs in, logs out, or rotates tokens.
 
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios.js';
 import * as authApi from '../api/auth.api.js';
 import { isStaffRole } from '../utils/constants.js';
+import { publishSessionEvent, subscribeSessionEvents } from '../utils/sessionSync.js';
 import { clearTokens, getAccessToken, getRefreshToken, saveTokens } from '../utils/tokenStorage.js';
 
 export const AuthContext = createContext(null);
@@ -42,6 +44,7 @@ export function AuthProvider({ children }) {
     if (!isStaffRole(me.role)) {
       await endServerSession();
       setUser(null);
+      publishSessionEvent('logout');
       throw new AccessDeniedError();
     }
     setUser(me);
@@ -49,11 +52,42 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    if (!getRefreshToken()) return;
+    if (!getRefreshToken()) {
+      setIsRestoring(false);
+      return;
+    }
     refreshMe()
       .catch(() => clearTokens())
       .finally(() => setIsRestoring(false));
   }, [refreshMe]);
+
+  // Other tabs: adopt a new login, or mirror logout / session expiry. Token rotation is handled by
+  // the shared storage + axios lock; this tab only needs a profile when another tab signs in.
+  useEffect(() => {
+    return subscribeSessionEvents((message) => {
+      if (message.type === 'logout' || message.type === 'session-expired') {
+        clearTokens();
+        setUser(null);
+        setIsRestoring(false);
+        navigate('/login', {
+          replace: true,
+          state: message.type === 'session-expired' ? { reason: 'expired' } : undefined,
+        });
+        return;
+      }
+
+      if (message.type === 'login') {
+        if (!getRefreshToken()) return;
+        setIsRestoring(true);
+        refreshMe()
+          .catch(() => {
+            clearTokens();
+            setUser(null);
+          })
+          .finally(() => setIsRestoring(false));
+      }
+    });
+  }, [navigate, refreshMe]);
 
   const login = useCallback(
     async (email, password) => {
@@ -66,13 +100,16 @@ export function AuthProvider({ children }) {
         await endServerSession();
         throw new AccessDeniedError();
       }
-      return refreshMe();
+      const me = await refreshMe();
+      publishSessionEvent('login');
+      return me;
     },
     [refreshMe],
   );
 
   const logout = useCallback(async () => {
     await endServerSession();
+    publishSessionEvent('logout');
     setUser(null);
     navigate('/login', { replace: true });
   }, [navigate]);
