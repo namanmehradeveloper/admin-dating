@@ -136,6 +136,11 @@ a {
     radial-gradient(110% 55% at 0% 0%, rgba(91, 75, 219, 0.18), transparent 58%),
     linear-gradient(180deg, var(--sidebar-bg-accent) 0%, var(--sidebar-bg) 100%);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
+  transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.layout--sidebar-collapsed {
+  --sidebar-width: var(--sidebar-collapsed-width, 84px);
 }
 
 .sidebar__inner {

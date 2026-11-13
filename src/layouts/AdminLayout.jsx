@@ -6,20 +6,44 @@ import Header from '../components/Header.jsx';
 import Sidebar from '../components/Sidebar.jsx';
 
 const DESKTOP_NAV_QUERY = '(min-width: 1101px)';
+const COLLAPSE_STORAGE_KEY = 'datingcloud.admin.sidebarCollapsed';
+
+function readCollapsedPreference() {
+  try {
+    return window.localStorage.getItem(COLLAPSE_STORAGE_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
 
 export default function AdminLayout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDesktopNav, setIsDesktopNav] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return window.matchMedia(DESKTOP_NAV_QUERY).matches;
+  });
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(readCollapsedPreference);
   const layoutRef = useRef(null);
+  const collapsed = isSidebarCollapsed && isDesktopNav;
 
   useEffect(() => {
     const media = window.matchMedia(DESKTOP_NAV_QUERY);
-    const closeOnDesktop = () => {
+    const syncViewport = () => {
+      setIsDesktopNav(media.matches);
       if (media.matches) setIsMenuOpen(false);
     };
-    closeOnDesktop();
-    media.addEventListener('change', closeOnDesktop);
-    return () => media.removeEventListener('change', closeOnDesktop);
+    syncViewport();
+    media.addEventListener('change', syncViewport);
+    return () => media.removeEventListener('change', syncViewport);
   }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(COLLAPSE_STORAGE_KEY, isSidebarCollapsed ? '1' : '0');
+    } catch {
+      // Ignore private-mode / blocked storage.
+    }
+  }, [isSidebarCollapsed]);
 
   useEffect(() => {
     if (!isMenuOpen) return undefined;
@@ -46,9 +70,17 @@ export default function AdminLayout() {
   }, [isMenuOpen]);
 
   return (
-    <div ref={layoutRef} className={`layout${isMenuOpen ? ' layout--menu-open' : ''}`}>
+    <div
+      ref={layoutRef}
+      className={`layout${isMenuOpen ? ' layout--menu-open' : ''}${collapsed ? ' layout--sidebar-collapsed' : ''}`}
+    >
       <a href="#main-content" className="skip-link">Skip to content</a>
-      <Sidebar isOpen={isMenuOpen} onNavigate={() => setIsMenuOpen(false)} />
+      <Sidebar
+        isOpen={isMenuOpen}
+        onNavigate={() => setIsMenuOpen(false)}
+        collapsed={collapsed}
+        onToggleCollapse={isDesktopNav ? () => setIsSidebarCollapsed((value) => !value) : undefined}
+      />
       {isMenuOpen && <div className="drawer-backdrop" onClick={() => setIsMenuOpen(false)} aria-hidden="true" />}
       <div className="layout__main" inert={isMenuOpen || undefined}>
         <Header isMenuOpen={isMenuOpen} onToggleMenu={() => setIsMenuOpen((open) => !open)} />
