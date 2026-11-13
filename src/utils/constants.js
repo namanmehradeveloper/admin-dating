@@ -209,7 +209,8 @@ export const NAV_GROUPS = [
     label: 'Monetization',
     items: [
       { to: '/subscriptions', label: 'Subscriptions', roles: ['ADMIN'] },
-      { to: '/payments', label: 'Payments', roles: ['ADMIN'], badge: 'Soon' },
+      { to: '/subscriptions/plans', label: 'Plans', roles: ['ADMIN'] },
+      { to: '/payments', label: 'Payments', roles: ['ADMIN'] },
       { to: '/coupons', label: 'Coupons', roles: ['ADMIN'] },
       { to: '/referrals', label: 'Referrals', roles: ['ADMIN'] },
     ],

@@ -19,6 +19,16 @@ export function formatNumber(value) {
   return typeof value === 'number' ? numberFormat.format(value) : '—';
 }
 
+// amountMinor in paise/cents → "₹499.00"
+export function formatMoney(amountMinor, currency = 'INR') {
+  if (typeof amountMinor !== 'number' || !Number.isFinite(amountMinor)) return '—';
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amountMinor / 100);
+  } catch {
+    return `${(amountMinor / 100).toFixed(2)} ${currency}`;
+  }
+}
+
 // "IN_REVIEW" -> "In review"
 export function formatEnum(value) {
   if (!value) return '—';

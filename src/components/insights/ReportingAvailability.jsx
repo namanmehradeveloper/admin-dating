@@ -2,10 +2,43 @@ import { Link } from 'react-router-dom';
 import { CreditCard, PhoneCall } from 'lucide-react';
 import { getCallsStats, getCallsStatus } from '../../api/calls.api.js';
 import { useApi } from '../../hooks/useApi.js';
-import { formatDuration, formatNumber } from '../../utils/format.js';
+import { formatDuration, formatMoney, formatNumber } from '../../utils/format.js';
 import { ChartCard, ChartState } from './Primitives.jsx';
 
 export default function ReportingAvailability({ revenue, isAdmin }) {
+  const revenueConfigured = revenue?.billingConfigured === true;
+  const revenueAmountMinor = typeof revenue?.amountMinor === 'number' ? revenue.amountMinor : null;
+  let revenueBody;
+  if (!revenueConfigured) {
+    revenueBody = (
+      <ChartState
+        title="Billing is not connected"
+        message={revenue?.note || 'Connect a payment provider to report revenue.'}
+        icon={CreditCard}
+      />
+    );
+  } else if (revenueAmountMinor == null) {
+    revenueBody = (
+      <ChartState
+        title="Revenue data is unavailable"
+        message={revenue?.note || 'The current reporting data does not include revenue amounts.'}
+        icon={CreditCard}
+      />
+    );
+  } else {
+    revenueBody = (
+      <ChartState
+        title={formatMoney(revenueAmountMinor, revenue.currency || 'INR')}
+        message={
+          revenue.excludesDemo
+            ? `${formatNumber(revenue.paymentCount || 0)} real payments · demo excluded`
+            : revenue.note || 'Succeeded payments in the selected range.'
+        }
+        icon={CreditCard}
+      />
+    );
+  }
+
   const status = useApi(() => (isAdmin ? getCallsStatus() : Promise.resolve(null)), [isAdmin]);
   const stats = useApi(() => (isAdmin && status.data?.configured ? getCallsStats({ days: 7 }) : Promise.resolve(null)), [
     isAdmin,
@@ -75,11 +108,7 @@ export default function ReportingAvailability({ revenue, isAdmin }) {
         icon={CreditCard}
         actions={isAdmin && <Link className="insight-text-link" to="/payments">View payments</Link>}
       >
-        <ChartState
-          title={revenue?.billingConfigured === false ? 'Billing is not connected' : 'Revenue data is unavailable'}
-          message={revenue?.note || 'The current reporting data does not include revenue amounts or a revenue history.'}
-          icon={CreditCard}
-        />
+        {revenueBody}
       </ChartCard>
       <ChartCard
         title="Calls"

@@ -8,7 +8,7 @@ export const NAV_ICONS = {
   '/dashboard': LayoutDashboard, '/users': Users, '/staff': Shield,
   '/verifications': ShieldCheck, '/matches': Heart, '/swipes': Sparkles,
   '/messaging': MessageSquare, '/blocks': Ban, '/calls': Phone, '/reports': Flag,
-  '/fraud': ShieldAlert, '/subscriptions': CreditCard, '/payments': Wallet,
+  '/fraud': ShieldAlert, '/subscriptions': CreditCard, '/subscriptions/plans': CreditCard, '/payments': Wallet,
   '/coupons': Ticket, '/referrals': Gift, '/notifications': Bell, '/cms': FileText,
   '/experiments': Beaker, '/support': Headset, '/analytics': LineChart,
   '/monitoring': Monitor, '/audit-logs': ScrollText,
@@ -16,9 +16,16 @@ export const NAV_ICONS = {
 };
 
 export function getPagePresentation(pathname) {
+  let best = null;
   for (const group of NAV_GROUPS) {
-    const item = group.items.find(({ to }) => pathname === to || pathname.startsWith(`${to}/`));
-    if (item) return { ...item, group: group.label, Icon: NAV_ICONS[item.to] ?? Activity };
+    for (const item of group.items) {
+      const matches = pathname === item.to || pathname.startsWith(`${item.to}/`);
+      if (!matches) continue;
+      if (!best || item.to.length > best.item.to.length) {
+        best = { item, group: group.label };
+      }
+    }
   }
+  if (best) return { ...best.item, group: best.group, Icon: NAV_ICONS[best.item.to] ?? Activity };
   return { label: 'Workspace', group: 'Administration', Icon: LayoutDashboard };
 }

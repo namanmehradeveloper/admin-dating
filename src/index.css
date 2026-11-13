@@ -5030,3 +5030,45 @@ html[data-theme='dark'] .login__card .field input {
     width: auto;
   }
 }
+
+/* Monetization admin helpers */
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+.stack-tight {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.stat-grid--compact {
+  margin-bottom: 0;
+}
+.mono.small,
+code.mono.small {
+  font-size: 0.78rem;
+}
+.timeline-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+.timeline-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--border);
+}
+@media (max-width: 720px) {
+  .page-header__actions .button-row {
+    width: 100%;
+  }
+  .page-header__actions .button {
+    flex: 1 1 auto;
+  }
+}

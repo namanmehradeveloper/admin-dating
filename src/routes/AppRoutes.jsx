@@ -20,13 +20,16 @@ import MessagingPage from '../pages/MessagingPage.jsx';
 import MonitoringPage from '../pages/MonitoringPage.jsx';
 import NotFoundPage from '../pages/NotFoundPage.jsx';
 import NotificationsPage from '../pages/NotificationsPage.jsx';
+import PaymentDetailPage from '../pages/PaymentDetailPage.jsx';
 import PaymentsPage from '../pages/PaymentsPage.jsx';
 import ReferralsPage from '../pages/ReferralsPage.jsx';
 import ReportDetailPage from '../pages/ReportDetailPage.jsx';
 import ReportsPage from '../pages/ReportsPage.jsx';
 import SettingsPage from '../pages/SettingsPage.jsx';
 import StaffPage from '../pages/StaffPage.jsx';
+import SubscriptionAnalyticsPage from '../pages/SubscriptionAnalyticsPage.jsx';
 import SubscriptionDetailPage from '../pages/SubscriptionDetailPage.jsx';
+import SubscriptionPlansPage from '../pages/SubscriptionPlansPage.jsx';
 import SubscriptionsPage from '../pages/SubscriptionsPage.jsx';
 import SupportPage from '../pages/SupportPage.jsx';
 import SwipesPage from '../pages/SwipesPage.jsx';
@@ -79,8 +82,11 @@ export default function AppRoutes() {
           <Route element={<ProtectedRoute roles={['ADMIN']} />}>
             <Route path="/staff" element={<StaffPage />} />
             <Route path="/subscriptions" element={<SubscriptionsPage />} />
+            <Route path="/subscriptions/analytics" element={<SubscriptionAnalyticsPage />} />
+            <Route path="/subscriptions/plans" element={<SubscriptionPlansPage />} />
             <Route path="/subscriptions/:userId" element={<SubscriptionDetailPage />} />
             <Route path="/payments" element={<PaymentsPage />} />
+            <Route path="/payments/:paymentId" element={<PaymentDetailPage />} />
             <Route path="/coupons" element={<CouponsPage />} />
             <Route path="/referrals" element={<ReferralsPage />} />
             <Route path="/calls" element={<CallsPage />} />
