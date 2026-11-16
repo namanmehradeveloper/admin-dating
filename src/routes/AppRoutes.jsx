@@ -11,6 +11,7 @@ import CallsPage from '../pages/CallsPage.jsx';
 import CmsDetailPage from '../pages/CmsDetailPage.jsx';
 import CmsPage from '../pages/CmsPage.jsx';
 import CouponsPage from '../pages/CouponsPage.jsx';
+import StorePage from '../pages/StorePage.jsx';
 import ExperimentsPage from '../pages/ExperimentsPage.jsx';
 import FraudPage from '../pages/FraudPage.jsx';
 import LoginPage from '../pages/LoginPage.jsx';
@@ -88,6 +89,7 @@ export default function AppRoutes() {
             <Route path="/payments" element={<PaymentsPage />} />
             <Route path="/payments/:paymentId" element={<PaymentDetailPage />} />
             <Route path="/coupons" element={<CouponsPage />} />
+            <Route path="/store" element={<StorePage />} />
             <Route path="/referrals" element={<ReferralsPage />} />
             <Route path="/calls" element={<CallsPage />} />
             <Route path="/experiments" element={<ExperimentsPage />} />

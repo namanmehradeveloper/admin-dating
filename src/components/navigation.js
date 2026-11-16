@@ -9,7 +9,7 @@ export const NAV_ICONS = {
   '/verifications': ShieldCheck, '/matches': Heart, '/swipes': Sparkles,
   '/messaging': MessageSquare, '/blocks': Ban, '/calls': Phone, '/reports': Flag,
   '/fraud': ShieldAlert, '/subscriptions': CreditCard, '/subscriptions/plans': CreditCard, '/payments': Wallet,
-  '/coupons': Ticket, '/referrals': Gift, '/notifications': Bell, '/cms': FileText,
+  '/coupons': Ticket, '/store': Gift, '/referrals': Gift, '/notifications': Bell, '/cms': FileText,
   '/experiments': Beaker, '/support': Headset, '/analytics': LineChart,
   '/monitoring': Monitor, '/audit-logs': ScrollText,
   '/security/login-activity': ShieldCheck, '/settings': Settings,

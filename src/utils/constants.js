@@ -212,6 +212,7 @@ export const NAV_GROUPS = [
       { to: '/subscriptions/plans', label: 'Plans', roles: ['ADMIN'] },
       { to: '/payments', label: 'Payments', roles: ['ADMIN'] },
       { to: '/coupons', label: 'Coupons', roles: ['ADMIN'] },
+      { to: '/store', label: 'Virtual store', roles: ['ADMIN'] },
       { to: '/referrals', label: 'Referrals', roles: ['ADMIN'] },
     ],
   },
