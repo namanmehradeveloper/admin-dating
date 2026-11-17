@@ -80,7 +80,7 @@ export default function Sidebar({ isOpen, onNavigate, collapsed = false, onToggl
             title={collapsed ? 'DatingCloud Administration' : undefined}
           >
             <span className="sidebar__mark" aria-hidden>
-              <Heart size={18} strokeWidth={2.2} fill="currentColor" />
+              <Heart size={14} strokeWidth={2.2} fill="currentColor" />
             </span>
             <div className="sidebar__brand-text">
               <strong>
@@ -90,13 +90,13 @@ export default function Sidebar({ isOpen, onNavigate, collapsed = false, onToggl
             </div>
           </NavLink>
           <button type="button" className="sidebar__close" onClick={onNavigate} aria-label="Close navigation">
-            <X size={18} aria-hidden />
+            <X size={16} aria-hidden />
           </button>
         </div>
 
         <div className="sidebar__workspace" title={collapsed ? 'Admin workspace' : undefined}>
           <span className="sidebar__workspace-icon" aria-hidden>
-            <ShieldCheck size={16} strokeWidth={2} />
+            <ShieldCheck size={14} strokeWidth={2} />
           </span>
           <div className="sidebar__workspace-copy">
             <strong>Admin workspace</strong>
@@ -123,7 +123,7 @@ export default function Sidebar({ isOpen, onNavigate, collapsed = false, onToggl
                   title={collapsed ? group.label : undefined}
                 >
                   <span>{group.label}</span>
-                  <ChevronDown size={14} className="nav-group__chevron" aria-hidden />
+                  <ChevronDown size={12} className="nav-group__chevron" aria-hidden />
                 </button>
 
                 <div
@@ -144,7 +144,7 @@ export default function Sidebar({ isOpen, onNavigate, collapsed = false, onToggl
                             data-tooltip={item.label}
                           >
                             <span className="nav-link__icon" aria-hidden>
-                              <Icon size={18} strokeWidth={1.85} />
+                              <Icon size={15} strokeWidth={2} />
                             </span>
                             <span className="nav-link__label">
                               {item.label}
@@ -169,7 +169,7 @@ export default function Sidebar({ isOpen, onNavigate, collapsed = false, onToggl
 
         <div className="sidebar__footer">
           <div className="sidebar__footer-meta">
-            <ShieldCheck size={15} aria-hidden />
+            <ShieldCheck size={13} aria-hidden />
             <span>Staff access only</span>
           </div>
           {typeof onToggleCollapse === 'function' ? (
@@ -180,7 +180,7 @@ export default function Sidebar({ isOpen, onNavigate, collapsed = false, onToggl
               aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
-              {collapsed ? <PanelLeftOpen size={17} aria-hidden /> : <PanelLeftClose size={17} aria-hidden />}
+              {collapsed ? <PanelLeftOpen size={15} aria-hidden /> : <PanelLeftClose size={15} aria-hidden />}
               <span>{collapsed ? 'Expand' : 'Collapse'}</span>
             </button>
           ) : null}
