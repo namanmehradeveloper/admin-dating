@@ -164,20 +164,22 @@ export default function NotificationsPage() {
           columns={['Title', 'Type', 'Audience', 'Recipients', 'Push', 'Sent by', 'Sent']}
           renderRow={(campaign) => (
             <tr key={campaign.id}>
-              <td>
-                <strong>{campaign.title}</strong>
-                <div className="muted small">{campaign.body}</div>
+              <td className="table-cell--stack">
+                <strong className="table-ellipsis" title={campaign.title}>{campaign.title}</strong>
+                <span className="muted small table-ellipsis" title={campaign.body}>{campaign.body}</span>
               </td>
               <td>{formatEnum(campaign.type)}</td>
-              <td>
-                {formatEnum(campaign.audience)}
-                {campaign.targetUserId && <div className="muted small">{campaign.targetUserId}</div>}
+              <td className="table-cell--stack">
+                <span className="table-ellipsis">{formatEnum(campaign.audience)}</span>
+                {campaign.targetUserId ? (
+                  <span className="muted small table-ellipsis" title={campaign.targetUserId}>{campaign.targetUserId}</span>
+                ) : null}
               </td>
               <td>{campaign.recipientCount}</td>
               <td>
                 <StatusBadge value={campaign.pushStatus} />
               </td>
-              <td>{campaign.createdBy?.displayName}</td>
+              <td><span className="table-ellipsis" title={campaign.createdBy?.displayName}>{campaign.createdBy?.displayName}</span></td>
               <td>{formatDateTime(campaign.createdAt)}</td>
             </tr>
           )}

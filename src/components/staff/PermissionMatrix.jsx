@@ -58,7 +58,7 @@ export default function PermissionMatrix({ modules, value, onChange, readOnly = 
         </div>
       )}
       <div className="table-wrap">
-        <table className="table perm-matrix__table">
+        <table className="table data-table perm-matrix__table">
           <thead>
             <tr>
               <th>Module</th>

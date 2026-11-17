@@ -167,11 +167,11 @@ export default function PaymentsPage() {
               <td>
                 <StatusBadge value={payment.isDemo ? 'DEMO' : 'REAL'} />
               </td>
-              <td>{payment.productId}</td>
+              <td><span className="table-ellipsis" title={payment.productId}>{payment.productId}</span></td>
               <td>
                 <div className="stack-tight">
-                  <code className="mono small">{payment.id}</code>
-                  <span className="muted small">{payment.checkoutId}</span>
+                  <code className="mono small table-ellipsis" title={payment.id}>{payment.id}</code>
+                  <span className="muted small table-ellipsis" title={payment.checkoutId}>{payment.checkoutId}</span>
                 </div>
               </td>
               <td>{formatDateTime(payment.verifiedAt || payment.createdAt)}</td>

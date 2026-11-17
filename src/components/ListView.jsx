@@ -2,6 +2,7 @@
 // The table shell (headers) always renders so empty queues still look like a table view.
 // `columns` may be strings or { key, label, node, className } objects.
 
+import { useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ErrorState from './ErrorState.jsx';
 import EmptyState from './EmptyState.jsx';
@@ -17,7 +18,58 @@ function renderColumnHeader(column) {
   return column.node ?? column.label;
 }
 
+const COMPLEX_CELL = 'a, button, input, select, textarea, .badge, .user-cell, .action-menu, .status-switch, .stack-inline, .user-row-actions, .table-ellipsis';
+
+function applyTruncationTooltips(root) {
+  if (!root) return;
+
+  root.querySelectorAll('tbody td').forEach((td) => {
+    if (td.classList.contains('table__row--empty') || td.querySelector('.state, .empty-state')) {
+      td.removeAttribute('title');
+      return;
+    }
+
+    const complex = td.querySelector(COMPLEX_CELL);
+    if (complex) {
+      if (td.dataset.autoTitle === '1') {
+        td.removeAttribute('title');
+        delete td.dataset.autoTitle;
+      }
+
+      td.querySelectorAll('.user-cell__name, .user-cell__subtitle, .table-ellipsis').forEach((node) => {
+        if (node.scrollWidth > node.clientWidth + 1) {
+          const text = node.textContent?.trim();
+          if (text) node.setAttribute('title', text);
+        }
+      });
+
+      const plainName = td.querySelector('.user-cell > span:not(.avatar):not(.user-cell__text)');
+      if (plainName && plainName.scrollWidth > plainName.clientWidth + 1) {
+        const text = plainName.textContent?.trim();
+        if (text) plainName.setAttribute('title', text);
+      }
+      return;
+    }
+
+    const text = td.textContent?.trim();
+    if (text && td.scrollWidth > td.clientWidth + 1) {
+      td.setAttribute('title', text);
+      td.dataset.autoTitle = '1';
+    } else if (td.dataset.autoTitle === '1') {
+      td.removeAttribute('title');
+      delete td.dataset.autoTitle;
+    }
+  });
+}
+
 export default function ListView({ list, columns, renderRow, emptyMessage, tableClassName = '', wrapClassName = '' }) {
+  const wrapRef = useRef(null);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => applyTruncationTooltips(wrapRef.current));
+    return () => window.cancelAnimationFrame(frame);
+  }, [list.items, list.isLoading, list.page, list.isLoadingMore, columns.length]);
+
   if (list.isLoading) return <LoadingState />;
   if (list.error && list.items.length === 0) return <ErrorState message={list.error} onRetry={list.reload} />;
 
@@ -28,7 +80,13 @@ export default function ListView({ list, columns, renderRow, emptyMessage, table
 
   return (
     <>
-      <div className={`table-wrap table-wrap--data ${wrapClassName}`.trim()} tabIndex={0} role="region" aria-label="Data table, scroll horizontally to view all columns">
+      <div
+        ref={wrapRef}
+        className={`table-wrap table-wrap--data ${wrapClassName}`.trim()}
+        tabIndex={0}
+        role="region"
+        aria-label="Data table, scroll horizontally to view all columns"
+      >
         <table className={`table data-table ${tableClassName}`.trim()}>
           <thead>
             <tr>

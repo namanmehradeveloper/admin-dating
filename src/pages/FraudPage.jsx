@@ -120,12 +120,15 @@ export default function FraudPage() {
                 <UserCell user={item.user} />
               </td>
               <td>{item.totalScore}</td>
-              <td>
-                {(item.signals ?? []).map((signal) => (
-                  <div key={signal.code} className="small">
-                    {formatEnum(signal.code)} ({signal.score}) — {signal.detail}
-                  </div>
-                ))}
+              <td className="table-cell--stack">
+                {(item.signals ?? []).map((signal) => {
+                  const label = `${formatEnum(signal.code)} (${signal.score}) — ${signal.detail}`;
+                  return (
+                    <span key={signal.code} className="small table-ellipsis" title={label}>
+                      {label}
+                    </span>
+                  );
+                })}
                 {(item.signals ?? []).length === 0 && <span className="muted">None</span>}
               </td>
               <td>

@@ -63,7 +63,7 @@ function CompactTable({ columns, rows, empty }) {
   if (!rows.length) return <p className="muted small monitoring-empty-inline">{empty}</p>;
   return (
     <div className="table-wrap monitoring-table-wrap">
-      <table className="table monitoring-table">
+      <table className="table data-table monitoring-table">
         <thead>
           <tr>
             {columns.map((column) => (

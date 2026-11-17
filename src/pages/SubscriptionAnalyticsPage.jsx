@@ -71,7 +71,7 @@ export default function SubscriptionAnalyticsPage() {
         </div>
         {data.growth?.length ? (
           <div className="table-wrap">
-            <table className="data-table">
+            <table className="table data-table">
               <thead>
                 <tr>
                   <th>Date</th>

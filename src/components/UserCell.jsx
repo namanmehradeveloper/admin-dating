@@ -12,13 +12,12 @@ export default function UserCell({ user, link = true, subtitle }) {
 
   if (!user) return <span className="muted">—</span>;
   const initial = user.displayName?.charAt(0)?.toUpperCase() ?? '?';
-  const label = subtitle ? (
+  const name = user.displayName ?? '—';
+  const label = (
     <span className="user-cell__text">
-      <span className="user-cell__name">{user.displayName}</span>
-      <span className="user-cell__subtitle">{subtitle}</span>
+      <span className="user-cell__name" title={name}>{name}</span>
+      {subtitle ? <span className="user-cell__subtitle" title={String(subtitle)}>{subtitle}</span> : null}
     </span>
-  ) : (
-    <span>{user.displayName}</span>
   );
   const showPhoto = Boolean(user.photoUrl) && !photoFailed;
   const content = (
@@ -31,9 +30,9 @@ export default function UserCell({ user, link = true, subtitle }) {
       {label}
     </>
   );
-  if (!link || user.status === 'DELETED') return <span className="user-cell">{content}</span>;
+  if (!link || user.status === 'DELETED') return <span className="user-cell" title={name}>{content}</span>;
   return (
-    <Link className="user-cell" to={`/users/${user.id}`}>
+    <Link className="user-cell" to={`/users/${user.id}`} title={name}>
       {content}
     </Link>
   );

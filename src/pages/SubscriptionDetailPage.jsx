@@ -76,7 +76,7 @@ export default function SubscriptionDetailPage() {
         </div>
         {data.recentPayments?.length ? (
           <div className="table-wrap">
-            <table className="data-table">
+            <table className="table data-table">
               <thead>
                 <tr>
                   <th>Amount</th>

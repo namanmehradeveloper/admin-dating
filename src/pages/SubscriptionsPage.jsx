@@ -130,7 +130,9 @@ export default function SubscriptionsPage() {
               <td>
                 <div className="stack-tight">
                   <StatusBadge value={entitlement.tier} />
-                  <span className="muted small">{entitlement.productId || '—'}</span>
+                  <span className="muted small table-ellipsis" title={entitlement.productId || '—'}>
+                    {entitlement.productId || '—'}
+                  </span>
                 </div>
               </td>
               <td>{formatEnum(entitlement.provider)}</td>

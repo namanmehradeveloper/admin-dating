@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { listLoginActivity } from '../api/loginActivity.api.js';
 import DataTablePanel from '../components/DataTablePanel.jsx';
+import EllipsisText from '../components/EllipsisText.jsx';
 import ListView from '../components/ListView.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import SearchField from '../components/SearchField.jsx';
@@ -90,10 +91,18 @@ export default function LoginActivityPage() {
           renderRow={(entry) => (
             <tr key={entry.id}>
               <td><UserCell user={entry.user} link={false} subtitle={entry.user?.id} /></td>
-              <td>{entry.ipAddress || '—'}</td>
-              <td>{locationFor(entry)}</td>
-              <td>{entry.deviceName || 'Unknown'} <span className="muted">· {formatEnum(entry.deviceType)}</span></td>
-              <td>{entry.browser || 'Unknown'} <span className="muted">· {entry.operatingSystem || 'Unknown'}</span></td>
+              <td><EllipsisText>{entry.ipAddress || '—'}</EllipsisText></td>
+              <td><EllipsisText>{locationFor(entry)}</EllipsisText></td>
+              <td>
+                <EllipsisText title={`${entry.deviceName || 'Unknown'} · ${formatEnum(entry.deviceType)}`}>
+                  {entry.deviceName || 'Unknown'} <span className="muted">· {formatEnum(entry.deviceType)}</span>
+                </EllipsisText>
+              </td>
+              <td>
+                <EllipsisText title={`${entry.browser || 'Unknown'} · ${entry.operatingSystem || 'Unknown'}`}>
+                  {entry.browser || 'Unknown'} <span className="muted">· {entry.operatingSystem || 'Unknown'}</span>
+                </EllipsisText>
+              </td>
               <td>{formatDateTime(entry.loginAt)}</td>
             </tr>
           )}

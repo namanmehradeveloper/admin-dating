@@ -6,6 +6,7 @@ import FilterSelect from '../components/FilterSelect.jsx';
 import FilterToolbar, { FilterChip } from '../components/FilterToolbar.jsx';
 import LinkRow from '../components/LinkRow.jsx';
 import DataTablePanel from '../components/DataTablePanel.jsx';
+import EllipsisText from '../components/EllipsisText.jsx';
 import ListView from '../components/ListView.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import SearchField from '../components/SearchField.jsx';
@@ -68,17 +69,19 @@ export default function SupportPage() {
           columns={['Subject', 'Member', 'Category', 'Status', 'Messages', 'Last message', 'Created']}
           renderRow={(ticket) => (
             <LinkRow key={ticket.id} to={`/support/${ticket.id}`}>
-              <td>{ticket.subject}</td>
+              <td><EllipsisText>{ticket.subject}</EllipsisText></td>
               <td>
                 <UserCell user={ticket.user} link={false} />
               </td>
-              <td>{formatEnum(ticket.category)}</td>
+              <td><EllipsisText>{formatEnum(ticket.category)}</EllipsisText></td>
               <td>
                 <StatusBadge value={ticket.status} />
               </td>
               <td>{ticket.messageCount}</td>
               <td>
-                {formatDateTime(ticket.lastMessageAt)} <span className="muted small">({formatEnum(ticket.lastMessageAuthor)})</span>
+                <EllipsisText title={`${formatDateTime(ticket.lastMessageAt)} (${formatEnum(ticket.lastMessageAuthor)})`}>
+                  {formatDateTime(ticket.lastMessageAt)} <span className="muted small">({formatEnum(ticket.lastMessageAuthor)})</span>
+                </EllipsisText>
               </td>
               <td>{formatDateTime(ticket.createdAt)}</td>
             </LinkRow>

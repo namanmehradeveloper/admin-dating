@@ -77,7 +77,15 @@ export default function ReportsPage() {
               <td>
                 <UserCell user={report.reporter} link={false} />
               </td>
-              <td>{report.assignedModerator?.displayName ?? <span className="muted">Unassigned</span>}</td>
+              <td>
+                {report.assignedModerator?.displayName ? (
+                  <span className="table-ellipsis" title={report.assignedModerator.displayName}>
+                    {report.assignedModerator.displayName}
+                  </span>
+                ) : (
+                  <span className="muted">Unassigned</span>
+                )}
+              </td>
               <td>
                 <StatusBadge value={report.status} />
               </td>
