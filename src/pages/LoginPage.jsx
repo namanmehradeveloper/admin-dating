@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { Heart, ShieldCheck, Users, Activity } from 'lucide-react';
+import { Eye, EyeOff, Heart, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { AccessDeniedError } from '../context/AuthContext.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { getErrorMessage } from '../utils/errors.js';
@@ -13,6 +13,7 @@ export default function LoginPage() {
   const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(location.state?.reason === 'expired' ? 'Your session expired. Please sign in again.' : null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -33,62 +34,51 @@ export default function LoginPage() {
 
   return (
     <div className="login">
-      <aside className="login__panel" aria-hidden="false">
-        <div className="login__glow login__glow--one" aria-hidden />
-        <div className="login__glow login__glow--two" aria-hidden />
+      <aside className="login__panel">
+        <div className="login__media" aria-hidden>
+          <img src="/images/couple.jpg" alt="" className="login__photo" />
+          <div className="login__wash" />
+          <div className="login__grain" />
+        </div>
+
         <div className="login__panel-inner">
           <div className="login__brand">
             <span className="login__mark" aria-hidden>
-              <Heart size={22} strokeWidth={2.4} />
+              <Heart size={20} strokeWidth={2.4} fill="currentColor" />
             </span>
             <div className="login__brand-text">
               <strong>Dating Cloud</strong>
-              <span>Admin console</span>
+              <span>Admin</span>
             </div>
           </div>
 
           <div className="login__hero">
-            <h1>A better space for meaningful connections.</h1>
-            <p>Your workspace for a trusted community. Manage members, support your team, and keep every connection moving forward.</p>
+            <h1>
+              Keep the
+              <em> community </em>
+              trusted.
+            </h1>
+            <p>Staff tools for members, safety, and the day-to-day of Dating Cloud.</p>
           </div>
 
-          <ul className="login__points">
-            <li>
-              <span className="login__point-icon" aria-hidden>
-                <Users size={16} strokeWidth={2.2} />
-              </span>
-              <div>
-                <strong>Member oversight</strong>
-                <span>Profiles, bans, and account actions</span>
-              </div>
-            </li>
-            <li>
-              <span className="login__point-icon" aria-hidden>
-                <ShieldCheck size={16} strokeWidth={2.2} />
-              </span>
-              <div>
-                <strong>Trust &amp; safety</strong>
-                <span>Reports, blocks, and photo review</span>
-              </div>
-            </li>
-            <li>
-              <span className="login__point-icon" aria-hidden>
-                <Activity size={16} strokeWidth={2.2} />
-              </span>
-              <div>
-                <strong>Platform oversight</strong>
-                <span>Dashboards and staff tools</span>
-              </div>
-            </li>
-          </ul>
+          <p className="login__panel-foot">
+            <LockKeyhole size={14} aria-hidden />
+            Restricted console · authorized staff only
+          </p>
         </div>
       </aside>
 
       <main className="login__main">
         <form className="login__card" onSubmit={handleSubmit} noValidate>
-          <span className="login__eyebrow">STAFF SIGN IN</span>
-          <h2>Welcome back.</h2>
-          <p className="muted">Welcome to DatingCloud. Enter your staff credentials to continue.</p>
+          <div className="login__form-brand" aria-hidden>
+            <span className="login__mark login__mark--soft">
+              <Heart size={18} strokeWidth={2.4} fill="currentColor" />
+            </span>
+          </div>
+
+          <span className="login__eyebrow">Staff sign in</span>
+          <h2>Welcome back</h2>
+          <p className="muted">Enter your work email and password to open the admin console.</p>
 
           <label className="field">
             <span>Work email</span>
@@ -101,16 +91,27 @@ export default function LoginPage() {
               required
             />
           </label>
+
           <label className="field">
             <span>Password</span>
-            <input
-              type="password"
-              autoComplete="current-password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-            />
+            <div className="login__password">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className="login__reveal"
+                onClick={() => setShowPassword((value) => !value)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
           </label>
 
           {error && (
@@ -118,10 +119,15 @@ export default function LoginPage() {
               {error}
             </p>
           )}
+
           <button type="submit" className="button button--primary button--block" disabled={isSubmitting || !email || !password}>
-            {isSubmitting ? 'Signing in…' : 'Sign in to your workspace'}
+            {isSubmitting ? 'Signing in…' : 'Sign in'}
           </button>
-          <p className="login__footnote"><ShieldCheck size={14} aria-hidden /> Authorized staff access only</p>
+
+          <p className="login__footnote">
+            <ShieldCheck size={14} aria-hidden />
+            Authorized staff access only
+          </p>
         </form>
       </main>
     </div>

@@ -850,48 +850,8 @@ html[data-theme='dark'] .button--danger { color: #33131c; }
 .staff-matrix-body { min-width: 0; }
 .perm-matrix__toolbar { flex-wrap: wrap; }
 
-/* Sign-in */
-.login { min-height: 100dvh; background: var(--surface); grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); }
-.login__panel {
-  background:
-    radial-gradient(90% 70% at 10% 0%, #8b74f266, transparent 55%),
-    radial-gradient(70% 55% at 100% 80%, #e0487860, transparent 50%),
-    linear-gradient(160deg, #2a1f55 0%, #1c1638 55%, #241a42 100%);
-  border: 0;
-  color: #fff;
-  padding: clamp(32px, 5vw, 80px);
-}
-.login__panel::before { opacity: .22; }
-.login__glow { display: block; opacity: .55; }
-.login__panel-inner { max-width: 520px; padding: 0; justify-content: center; gap: 48px; min-height: calc(100dvh - 160px); }
-.login__brand { margin-bottom: auto; }
-.login__mark {
-  background: linear-gradient(145deg, #a792ff, #5a3fd6 55%, #e04878);
-  box-shadow: 0 10px 28px #5a3fd655;
-  width: 42px;
-  height: 42px;
-  border-radius: 13px;
-}
-.login__brand-text strong { font-size: 21px; letter-spacing: -.5px; }
-.login__brand-text span { color: #bbb2d6; letter-spacing: 1.4px; font-size: 10px; }
-.login__hero h1 { max-width: 12ch; font-size: clamp(36px, 4vw, 59px); line-height: 1.12; letter-spacing: -2.5px; font-weight: 600; }
-.login__hero p { color: #c3bbd7; font-size: 14px; line-height: 1.9; max-width: 39ch; margin-top: 24px; }
-.login__points { gap: 22px; margin-top: 0; margin-bottom: auto; }
-.login__points li { background: none; border: 0; padding: 0; gap: 14px; }
-.login__points strong { font-size: 12px; }
-.login__points li div > span { color: #bbb2d6; font-size: 11px; margin-top: 3px; }
-.login__point-icon { border-radius: 10px; background: #ffffff0d; border: 1px solid #ffffff16; width: 36px; height: 36px; color: #c4b1ff; }
-.login__main { padding: 48px; background: var(--surface); margin-top: 0; }
-.login__card { border: 0; padding: 0; background: transparent; box-shadow: none; width: 100%; max-width: 380px; }
-html[data-theme='dark'] .login__card { box-shadow: none; background: transparent; border: 0; }
-.login__eyebrow { font-size: 10px; font-weight: 650; letter-spacing: 1.8px; color: var(--primary); }
-.login__card h2 { font-size: 34px; font-weight: 650; letter-spacing: -1.2px; margin: 14px 0 12px; }
-.login__card > .muted { font-size: 13px; line-height: 1.8; margin-bottom: 32px; }
-.login__card .field { margin-bottom: 20px; }
-.login__card .field > span { font-size: 12px; }
-.login__card .field input { min-height: 48px; font-size: 14px; background: var(--control-bg-soft); }
-.login__card .button { min-height: 48px; font-size: 13px; margin-top: 8px; }
-.login__footnote { display: flex; align-items: center; justify-content: center; gap: 7px; color: var(--muted); font-size: 10px; margin: 24px 0 0; }
+/* Sign-in — keep page-specific look from index.css; only light theme touch-ups here. */
+.login__card .button--primary:disabled { opacity: .55; }
 
 /* Responsive composition: keep all data and actions reachable. */
 @media (min-width: 1500px) {
@@ -936,15 +896,7 @@ html[data-theme='dark'] .login__card { box-shadow: none; background: transparent
   .dashboard-date-bar { align-items: stretch; }
   .dashboard-date-bar__form { width: 100%; }
   .dashboard-date-bar .field--inline { flex: 1 1 120px; }
-  .login { grid-template-columns: 1fr; }
-  .login__panel { padding: 28px; }
-  .login__panel-inner { min-height: 0; max-width: none; gap: 24px; }
-  .login__brand { margin: 0; }
-  .login__hero h1 { max-width: 23ch; font-size: 30px; letter-spacing: -1px; }
-  .login__hero p { display: none; }
-  .login__points { display: none; }
-  .login__main { padding: 40px 24px; }
-}
+  }
 @media (max-width: 600px) {
   .content { padding: 22px 16px 36px; }
   .topbar { padding: 10px 16px; min-height: 64px; gap: 8px; }
@@ -1001,12 +953,7 @@ html[data-theme='dark'] .login__card { box-shadow: none; background: transparent
   .side-panel__header, .side-panel__body { padding: 20px; }
   .user-drawer__footer { padding: 14px 20px; }
   .monitoring-grid--system, .monitoring-grid--integrations { grid-template-columns: 1fr; }
-  .login__hero { display: block; }
-  .login__hero h1 { font-size: 26px; }
-  .login__panel { padding: 24px; }
-  .login__main { padding: 32px 24px; }
-  .login__card h2 { font-size: 30px; }
-}
+  }
 @media (max-width: 380px) {
   .content { padding: 18px 12px 30px; }
   .topbar { padding: 10px 12px; }
