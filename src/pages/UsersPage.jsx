@@ -96,7 +96,8 @@ function formatGender(value) {
 }
 
 export default function UsersPage() {
-  const { user: staff } = useAuth();
+  const { user: staff, hasPermission } = useAuth();
+  const canCreateUser = hasPermission('USERS', 'CREATE');
   const [searchText, setSearchText] = useState('');
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const list = usePaginatedList(listUsers, filters);
@@ -192,10 +193,12 @@ export default function UsersPage() {
               <FileSpreadsheet size={15} aria-hidden />
               Export CSV
             </button>
-            <button type="button" className="button button--primary" onClick={() => setAddOpen(true)}>
-              <Plus size={15} aria-hidden />
-              Add user
-            </button>
+            {canCreateUser && (
+              <button type="button" className="button button--primary" onClick={() => setAddOpen(true)}>
+                <Plus size={15} aria-hidden />
+                Add user
+              </button>
+            )}
           </>
         }
       />

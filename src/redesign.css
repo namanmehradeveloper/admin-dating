@@ -1283,6 +1283,13 @@ td.table-cell--stack > span {
   .topbar { min-height: 68px; padding: 12px 24px; }
   .topbar__menu { display: inline-flex; }
   .staff-roles-layout { grid-template-columns: 1fr; }
+  .staff-roles-layout > :first-child {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    z-index: auto;
+  }
+  .staff-roles-layout > :last-child { z-index: auto; }
   .drawer-backdrop {
     background: rgba(18, 14, 36, .48);
     backdrop-filter: blur(4px);

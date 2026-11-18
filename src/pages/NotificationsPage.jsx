@@ -118,7 +118,8 @@ function CampaignForm({ onSent }) {
 }
 
 export default function NotificationsPage() {
-  const { isAdmin } = useAuth();
+  const { hasPermission } = useAuth();
+  const canSendCampaign = hasPermission('NOTIFICATIONS', 'CREATE');
   const [searchText, setSearchText] = useState('');
   const [filters, setFilters] = useState({ q: '' });
   const list = usePaginatedList(listCampaigns, filters);
@@ -146,7 +147,7 @@ export default function NotificationsPage() {
           </button>
         </form>
       </FilterToolbar>
-      {isAdmin ? (
+      {canSendCampaign ? (
         <CampaignForm
           onSent={(campaign) => {
             setNotice(`Sent to ${campaign.recipientCount} member(s).`);

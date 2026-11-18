@@ -22,7 +22,8 @@ function RateCard({ label, value, hint, to, icon: Icon, tone = 'primary' }) {
   return <Link to={to} className="analytics-rate analytics-rate--link"><span className={`analytics-rate__icon analytics-rate__icon--${tone}`}><Icon size={18} aria-hidden /></span><span className="analytics-rate__body"><strong>{value}</strong><span className="analytics-rate__label">{label}</span><span className="analytics-rate__hint">{hint}</span></span></Link>;
 }
 export default function AnalyticsPage() {
-  const { isAdmin } = useAuth();
+  const { hasPermission } = useAuth();
+  const canViewSubscriptions = hasPermission('SUBSCRIPTIONS', 'VIEW');
   const range = useInsightRange();
   const { data: result, error, isLoading, reload } = useApi(async () => {
     const request = analyticsRequest(range.applied);
@@ -57,7 +58,7 @@ export default function AnalyticsPage() {
         <MetricCard label="Swipes" value={custom ? null : count(data.swipeTotals)} hint={custom ? 'Choose a 7-, 30-, or 90-day preset' : `${number(rates.likesInRange)} likes and super likes`} delta={!custom ? data.changes?.swipes : undefined} icon={Sparkles} color="amber" to="/swipes" />
         <MetricCard label="Matches" value={count(custom ? matches.createdInRange : data.matchTotals)} hint={`${number(matches.active)} active matches now`} delta={!custom ? data.changes?.matches : dashboard.changes?.matches} icon={Heart} color="pink" to="/matches" />
         <MetricCard label="Messages" value={count(custom ? messages.sentInRange : data.messageTotals)} hint={`${number(messages.sentToday)} messages today`} delta={!custom ? data.changes?.messages : dashboard.changes?.messages} icon={MessageSquare} color="teal" to="/messaging" />
-        <MetricCard label="Active Plus" value={count(plus)} hint="Members with active Plus access" scope="Current total" icon={Crown} color="amber" to={isAdmin ? '/subscriptions' : undefined} />
+        <MetricCard label="Active Plus" value={count(plus)} hint="Members with active Plus access" scope="Current total" icon={Crown} color="amber" to={canViewSubscriptions ? '/subscriptions' : undefined} />
         <MetricCard label="Open reports" value={count(custom ? dashboard.moderation?.openReports : data.openReports)} hint={`${number(dashboard.moderation?.pendingVerifications)} pending verifications`} scope="Current queue" icon={Flag} color="pink" to="/reports" />
         <MetricCard label="Open tickets" value={count(custom ? dashboard.support?.openTickets : data.openTickets)} hint="Support requests awaiting resolution" scope="Current queue" icon={Ticket} color="blue" to="/support" />
       </div>
@@ -86,7 +87,7 @@ export default function AnalyticsPage() {
       <ChartCard title="Like conversion by action" subtitle="How often likes and super likes become matches" icon={Percent} actions={<Link className="insight-text-link" to="/swipes">Open swipes</Link>}>
         {!performance.length ? <ChartState message={custom ? 'Choose a preset to view conversion by action.' : 'No conversion records were returned for this period.'} /> : <div className="table-wrap" tabIndex={0} role="region" aria-label="Conversion by action"><table className="table data-table analytics-conv-table"><thead><tr><th scope="col">Action</th><th scope="col">Likes</th><th scope="col">Matches</th><th scope="col">Conversion</th></tr></thead><tbody>{performance.map(row => <tr key={row.action}><th scope="row">{formatEnum(row.action)}</th><td>{number(row.likes)}</td><td>{number(row.matches)}</td><td><strong>{rate(row.conversion)}</strong></td></tr>)}</tbody></table></div>}
       </ChartCard>
-      <ReportingAvailability revenue={dashboard.revenue} isAdmin={isAdmin} />
+      <ReportingAvailability revenue={dashboard.revenue} isAdmin={canViewSubscriptions} />
     </>}
   </div>;
 }

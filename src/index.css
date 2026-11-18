@@ -5089,6 +5089,22 @@ html[data-theme='dark'] .login__footnote {
   align-items: start;
 }
 
+/* Keep Roles panel pinned while the permission matrix scrolls. */
+.staff-roles-layout > :first-child {
+  position: sticky;
+  top: 72px;
+  align-self: start;
+  max-height: calc(100vh - 88px);
+  max-height: calc(100dvh - 88px);
+  overflow: auto;
+  z-index: 2;
+}
+
+.staff-roles-layout > :last-child {
+  position: relative;
+  z-index: 1;
+}
+
 .staff-matrix-body {
   padding: 1rem 1.15rem 1.15rem;
 }
@@ -5126,6 +5142,17 @@ html[data-theme='dark'] .login__footnote {
 @media (max-width: 960px) {
   .staff-roles-layout {
     grid-template-columns: 1fr;
+  }
+
+  .staff-roles-layout > :first-child {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    z-index: auto;
+  }
+
+  .staff-roles-layout > :last-child {
+    z-index: auto;
   }
 
   .staff-col--name,

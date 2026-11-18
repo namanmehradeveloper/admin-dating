@@ -170,35 +170,35 @@ export const SETTING_LABELS = {
   verificationDailyLimit: 'Verification attempts per member per day',
 };
 
-// Grouped sidebar. `roles` lists who may open the page (the API enforces the same rules).
+// Grouped sidebar. Each item needs a module VIEW permission (API enforces the same keys).
 export const NAV_GROUPS = [
   {
     label: 'Overview',
-    items: [{ to: '/dashboard', label: 'Dashboard', roles: STAFF_ROLES }],
+    items: [{ to: '/dashboard', label: 'Dashboard', permission: 'DASHBOARD.VIEW' }],
   },
   {
     label: 'People',
     items: [
-      { to: '/users', label: 'Users', roles: STAFF_ROLES },
-      { to: '/staff', label: 'Roles & permissions', roles: ['ADMIN', 'SUPER_ADMIN'] },
-      { to: '/verifications', label: 'Verifications', roles: STAFF_ROLES },
+      { to: '/users', label: 'Users', permission: 'USERS.VIEW' },
+      { to: '/staff', label: 'Roles & permissions', permission: 'STAFF.VIEW' },
+      { to: '/verifications', label: 'Verifications', permission: 'VERIFICATIONS.VIEW' },
     ],
   },
   {
     label: 'Dating core',
     items: [
-      { to: '/matches', label: 'Matches', roles: STAFF_ROLES },
-      { to: '/swipes', label: 'Swipes & likes', roles: STAFF_ROLES },
-      { to: '/messaging', label: 'Messaging', roles: STAFF_ROLES },
-      { to: '/blocks', label: 'Blocks', roles: STAFF_ROLES },
-      { to: '/calls', label: 'Calls', roles: ['ADMIN'] },
+      { to: '/matches', label: 'Matches', permission: 'MATCHES.VIEW' },
+      { to: '/swipes', label: 'Swipes & likes', permission: 'SWIPES.VIEW' },
+      { to: '/messaging', label: 'Messaging', permission: 'MESSAGING.VIEW' },
+      { to: '/blocks', label: 'Blocks', permission: 'BLOCKS.VIEW' },
+      { to: '/calls', label: 'Calls', permission: 'CALLS.VIEW' },
     ],
   },
   {
     label: 'Safety',
     items: [
-      { to: '/reports', label: 'Reports', roles: STAFF_ROLES },
-      { to: '/fraud', label: 'Fraud signals', roles: STAFF_ROLES },
+      { to: '/reports', label: 'Reports', permission: 'REPORTS.VIEW' },
+      { to: '/fraud', label: 'Fraud signals', permission: 'FRAUD.VIEW' },
     ],
   },
   {
@@ -208,30 +208,30 @@ export const NAV_GROUPS = [
   {
     label: 'Monetization',
     items: [
-      { to: '/subscriptions', label: 'Subscriptions', roles: ['ADMIN'] },
-      { to: '/subscriptions/plans', label: 'Plans', roles: ['ADMIN'] },
-      { to: '/payments', label: 'Payments', roles: ['ADMIN'] },
-      { to: '/coupons', label: 'Coupons', roles: ['ADMIN'] },
-      { to: '/store', label: 'Virtual store', roles: ['ADMIN'] },
-      { to: '/referrals', label: 'Referrals', roles: ['ADMIN'] },
+      { to: '/subscriptions', label: 'Subscriptions', permission: 'SUBSCRIPTIONS.VIEW' },
+      { to: '/subscriptions/plans', label: 'Plans', permission: 'SUBSCRIPTIONS.VIEW' },
+      { to: '/payments', label: 'Payments', permission: 'PAYMENTS.VIEW' },
+      { to: '/coupons', label: 'Coupons', permission: 'COUPONS.VIEW' },
+      { to: '/store', label: 'Virtual store', permission: 'PAYMENTS.VIEW' },
+      { to: '/referrals', label: 'Referrals', permission: 'REFERRALS.VIEW' },
     ],
   },
   {
     label: 'Content & growth',
     items: [
-      { to: '/notifications', label: 'Notifications', roles: STAFF_ROLES },
-      { to: '/cms', label: 'CMS', roles: STAFF_ROLES },
-      { to: '/experiments', label: 'Experiments', roles: ['ADMIN'] },
-      { to: '/support', label: 'Support', roles: STAFF_ROLES },
+      { to: '/notifications', label: 'Notifications', permission: 'NOTIFICATIONS.VIEW' },
+      { to: '/cms', label: 'CMS', permission: 'CMS.VIEW' },
+      { to: '/experiments', label: 'Experiments', permission: 'EXPERIMENTS.VIEW' },
+      { to: '/support', label: 'Support', permission: 'SUPPORT.VIEW' },
     ],
   },
   {
     label: 'System',
     items: [
-      { to: '/analytics', label: 'Analytics', roles: STAFF_ROLES },
-      { to: '/monitoring', label: 'Monitoring', roles: ['ADMIN'] },
-      { to: '/audit-logs', label: 'Audit logs', roles: ['ADMIN'] },
-      { to: '/settings', label: 'Settings', roles: ['ADMIN'] },
+      { to: '/analytics', label: 'Analytics', permission: 'ANALYTICS.VIEW' },
+      { to: '/monitoring', label: 'Monitoring', permission: 'MONITORING.VIEW' },
+      { to: '/audit-logs', label: 'Audit logs', permission: 'AUDIT_LOGS.VIEW' },
+      { to: '/settings', label: 'Settings', permission: 'SETTINGS.VIEW' },
     ],
   },
 ];

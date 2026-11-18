@@ -83,7 +83,9 @@ const STATUS_CHIPS = [
 ];
 
 export default function CmsPage() {
-  const { isAdmin } = useAuth();
+  const { hasPermission } = useAuth();
+  const canCreateCms = hasPermission('CMS', 'CREATE');
+  const canEditCms = hasPermission('CMS', 'EDIT');
   const [searchText, setSearchText] = useState('');
   const [filters, setFilters] = useState({ q: '', type: '', status: '' });
   const list = usePaginatedList(listCms, filters);
@@ -110,7 +112,7 @@ export default function CmsPage() {
         title="Banners & CMS"
         subtitle="Banners, FAQs, tips, guidelines and static pages."
         actions={
-          isAdmin && (
+          canCreateCms && (
             <button type="button" className="button button--primary" onClick={() => setIsCreateOpen(true)}>
               New entry
             </button>
@@ -153,7 +155,7 @@ export default function CmsPage() {
         <ListView
           list={list}
           emptyMessage="No CMS entries yet."
-          columns={['Title', 'Slug', 'Type', 'Status', 'Updated', ...(isAdmin ? ['Actions'] : [])]}
+          columns={['Title', 'Slug', 'Type', 'Status', 'Updated', ...(canEditCms ? ['Actions'] : [])]}
           renderRow={(item) => (
             <tr key={item.id}>
               <td>
@@ -165,7 +167,7 @@ export default function CmsPage() {
                 <StatusBadge value={item.status} />
               </td>
               <td>{formatDateTime(item.updatedAt)}</td>
-              {isAdmin && (
+              {canEditCms && (
                 <td className="stack-inline">
                   {item.status !== 'PUBLISHED' && (
                     <button type="button" className="button button--secondary button--small" disabled={busyId === item.id} onClick={() => setStatus(item.id, 'PUBLISHED')}>

@@ -13,7 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth.js';
-import { NAV_GROUPS, roleSatisfies } from '../utils/constants.js';
+import { NAV_GROUPS } from '../utils/constants.js';
 import { NAV_ICONS } from './navigation.js';
 
 function groupContainsPath(group, pathname) {
@@ -28,13 +28,12 @@ export default function Sidebar({ isOpen, onNavigate, collapsed = false, onToggl
     () =>
       NAV_GROUPS.map((group) => ({
         ...group,
-        items: group.items.filter(
-          (item) =>
-            roleSatisfies(user.role, item.roles) &&
-            (!item.permission || user.permissionKeys?.includes(item.permission)),
-        ),
+        items: group.items.filter((item) => {
+          if (item.permission) return user.permissionKeys?.includes(item.permission);
+          return true;
+        }),
       })).filter((group) => group.items.length > 0),
-    [user.permissionKeys, user.role],
+    [user.permissionKeys],
   );
 
   const [openGroups, setOpenGroups] = useState(() => {

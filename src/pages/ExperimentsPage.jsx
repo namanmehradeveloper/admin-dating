@@ -10,6 +10,7 @@ import Notice from '../components/Notice.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import SearchField from '../components/SearchField.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
+import { useAuth } from '../hooks/useAuth.js';
 import { usePaginatedList } from '../hooks/usePaginatedList.js';
 import { getErrorMessage } from '../utils/errors.js';
 import { formatDateTime, formatEnum } from '../utils/format.js';
@@ -76,6 +77,9 @@ const STATUS_CHIPS = [
 ];
 
 export default function ExperimentsPage() {
+  const { hasPermission } = useAuth();
+  const canCreateExperiment = hasPermission('EXPERIMENTS', 'CREATE');
+  const canEditExperiment = hasPermission('EXPERIMENTS', 'EDIT');
   const [searchText, setSearchText] = useState('');
   const [filters, setFilters] = useState({ q: '', status: '' });
   const list = usePaginatedList(listExperiments, filters);
@@ -102,9 +106,11 @@ export default function ExperimentsPage() {
         title="Growth & experiments"
         subtitle="Experiment definitions and rollout controls. Conversion metrics appear only when a measurement pipeline is connected."
         actions={
-          <button type="button" className="button button--primary" onClick={() => setIsCreateOpen(true)}>
-            New experiment
-          </button>
+          canCreateExperiment ? (
+            <button type="button" className="button button--primary" onClick={() => setIsCreateOpen(true)}>
+              New experiment
+            </button>
+          ) : null
         }
       />
       <Notice onDismiss={() => setNotice(null)}>{notice}</Notice>
@@ -156,17 +162,17 @@ export default function ExperimentsPage() {
               </td>
               <td>{formatDateTime(item.updatedAt)}</td>
               <td className="stack-inline">
-                {item.status === 'DRAFT' && (
+                {canEditExperiment && item.status === 'DRAFT' && (
                   <button type="button" className="button button--secondary button--small" disabled={busyId === item.id} onClick={() => setStatus(item.id, 'RUNNING')}>
                     Start
                   </button>
                 )}
-                {item.status === 'RUNNING' && (
+                {canEditExperiment && item.status === 'RUNNING' && (
                   <button type="button" className="button button--secondary button--small" disabled={busyId === item.id} onClick={() => setStatus(item.id, 'PAUSED')}>
                     Pause
                   </button>
                 )}
-                {['RUNNING', 'PAUSED'].includes(item.status) && (
+                {canEditExperiment && ['RUNNING', 'PAUSED'].includes(item.status) && (
                   <button type="button" className="button button--secondary button--small" disabled={busyId === item.id} onClick={() => setStatus(item.id, 'COMPLETED')}>
                     Complete
                   </button>

@@ -248,7 +248,9 @@ function ConfigPanel({ onSaved }) {
 }
 
 export default function MatchesPage() {
-  const { isAdmin } = useAuth();
+  const { hasPermission } = useAuth();
+  const canViewMatches = hasPermission('MATCHES', 'VIEW');
+  const canEditMatches = hasPermission('MATCHES', 'EDIT');
   const [days, setDays] = useState(7);
   const [view, setView] = useState('overview');
   const [searchText, setSearchText] = useState('');
@@ -259,11 +261,11 @@ export default function MatchesPage() {
 
   const stats = useApi(() => getMatchStats({ days }), [days]);
   const analytics = useApi(() => (view === 'analytics' ? getMatchAnalytics({ days }) : Promise.resolve(null)), [days, view]);
-  const suspicious = useApi(() => (view === 'suspicious' && isAdmin ? listSuspiciousMatches() : Promise.resolve(null)), [view, isAdmin]);
+  const suspicious = useApi(() => (view === 'suspicious' && canViewMatches ? listSuspiciousMatches() : Promise.resolve(null)), [view, canViewMatches]);
   const list = usePaginatedList(listMatches, filters);
   const reported = usePaginatedList(listReportedMatches, {});
 
-  const adminViews = isAdmin ? VIEWS : VIEWS.filter((item) => !['suspicious', 'config'].includes(item.value));
+  const adminViews = canEditMatches ? VIEWS : VIEWS.filter((item) => !['config'].includes(item.value));
 
   function handleSearch(event) {
     event.preventDefault();
@@ -481,7 +483,7 @@ export default function MatchesPage() {
 
       {view === 'suspicious' && (
         <DataTablePanel title="Suspicious matching activity" subtitle="High match velocity and rapid unmatches in the last 24 hours.">
-          {!isAdmin ? (
+          {!canViewMatches ? (
             <Notice>Fraud investigation requires ADMIN.</Notice>
           ) : suspicious.isLoading && !suspicious.data ? (
             <LoadingState />
@@ -617,7 +619,7 @@ export default function MatchesPage() {
       )}
 
       {view === 'config' &&
-        (isAdmin ? (
+        (canEditMatches ? (
           <ConfigPanel
             onSaved={(message) => {
               setNotice(message);

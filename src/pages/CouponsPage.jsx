@@ -14,6 +14,7 @@ import SearchField from '../components/SearchField.jsx';
 import StatCard from '../components/StatCard.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
 import { useApi } from '../hooks/useApi.js';
+import { useAuth } from '../hooks/useAuth.js';
 import { usePaginatedList } from '../hooks/usePaginatedList.js';
 import { COUPON_TYPES } from '../utils/constants.js';
 import { getErrorMessage } from '../utils/errors.js';
@@ -91,6 +92,9 @@ const STATE_CHIPS = [
 ];
 
 export default function CouponsPage() {
+  const { hasPermission } = useAuth();
+  const canCreateCoupon = hasPermission('COUPONS', 'CREATE');
+  const canEditCoupon = hasPermission('COUPONS', 'EDIT');
   const [searchText, setSearchText] = useState('');
   const [filters, setFilters] = useState({ q: '', isActive: '' });
   const stats = useApi(() => getCouponStats(), []);
@@ -119,9 +123,11 @@ export default function CouponsPage() {
         title="Offers & coupons"
         subtitle="Promo codes for plan discounts. No card data is stored."
         actions={
-          <button type="button" className="button button--primary" onClick={() => setIsCreateOpen(true)}>
-            New coupon
-          </button>
+          canCreateCoupon ? (
+            <button type="button" className="button button--primary" onClick={() => setIsCreateOpen(true)}>
+              New coupon
+            </button>
+          ) : null
         }
       />
       <Notice onDismiss={() => setNotice(null)}>{notice}</Notice>
@@ -189,7 +195,7 @@ export default function CouponsPage() {
               </td>
               <td>{formatDate(coupon.endsAt)}</td>
               <td>
-                {coupon.isActive && (
+                {canEditCoupon && coupon.isActive && (
                   <button type="button" className="button button--secondary button--small" disabled={busyId === coupon.id} onClick={() => deactivate(coupon.id)}>
                     Deactivate
                   </button>

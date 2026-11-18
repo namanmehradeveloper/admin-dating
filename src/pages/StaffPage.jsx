@@ -1,15 +1,17 @@
 // Roles & Permissions: staff accounts, permission matrix, custom roles and sessions.
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Shield, UserCog, Users } from 'lucide-react';
 import {
   createStaff,
   deleteRole,
   getPermissionCatalog,
+  getRole,
   getRoleStats,
   getStaffStats,
   listRoles,
   listStaff,
+  updateRolePermissions,
 } from '../api/staff.api.js';
 import ConfirmDialog from '../components/ConfirmDialog.jsx';
 import FilterSelect from '../components/FilterSelect.jsx';
@@ -107,7 +109,7 @@ function CreateStaffDialog({ open, roleOptions, onClose, onCreated }) {
 }
 
 export default function StaffPage() {
-  const { user: me } = useAuth();
+  const { user: me, hasPermission, refreshMe } = useAuth();
   const [view, setView] = useState('staff');
   const [searchText, setSearchText] = useState('');
   const [filters, setFilters] = useState(EMPTY_FILTERS);
@@ -116,9 +118,21 @@ export default function StaffPage() {
   const [selectedStaffId, setSelectedStaffId] = useState(null);
   const [roleEditor, setRoleEditor] = useState(null);
   const [matrixRoleId, setMatrixRoleId] = useState(null);
+  const [matrixRole, setMatrixRole] = useState(null);
+  const [matrixLoading, setMatrixLoading] = useState(false);
+  const [matrixError, setMatrixError] = useState(null);
+  const [matrixEditing, setMatrixEditing] = useState(false);
+  const [draftPermissions, setDraftPermissions] = useState([]);
+  const [matrixSaveError, setMatrixSaveError] = useState(null);
+  const [matrixSaving, setMatrixSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteError, setDeleteError] = useState(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
+
+  const canCreateStaff = hasPermission('STAFF', 'CREATE');
+  const canCreateRole = hasPermission('ROLES', 'CREATE');
+  const canEditRole = hasPermission('ROLES', 'EDIT');
+  const canDeleteRole = hasPermission('ROLES', 'DELETE');
 
   const staffStats = useApi(() => getStaffStats(), []);
   const roleStats = useApi(() => getRoleStats(), []);
@@ -134,7 +148,83 @@ export default function StaffPage() {
   const list = usePaginatedList(listStaff, listFilters);
 
   const roleOptions = roles.data?.items ?? [];
-  const matrixRole = roleOptions.find((item) => item.id === matrixRoleId) ?? roleOptions[0] ?? null;
+
+  useEffect(() => {
+    if (!matrixRoleId && roleOptions.length > 0) {
+      setMatrixRoleId(roleOptions[0].id);
+    }
+  }, [matrixRoleId, roleOptions]);
+
+  useEffect(() => {
+    if (!matrixRoleId) {
+      setMatrixRole(null);
+      setMatrixEditing(false);
+      setDraftPermissions([]);
+      setMatrixSaveError(null);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setMatrixLoading(true);
+    setMatrixError(null);
+    setMatrixEditing(false);
+    setMatrixSaveError(null);
+
+    getRole(matrixRoleId)
+      .then((role) => {
+        if (!cancelled) {
+          setMatrixRole(role);
+          setDraftPermissions(role.permissions ?? []);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setMatrixError(getErrorMessage(err));
+          setMatrixRole(null);
+          setDraftPermissions([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setMatrixLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [matrixRoleId, roles.data]);
+
+  function startMatrixEdit() {
+    if (!matrixRole || matrixRole.slug === 'SUPER_ADMIN') return;
+    setDraftPermissions(matrixRole.permissions ?? []);
+    setMatrixSaveError(null);
+    setMatrixEditing(true);
+  }
+
+  function cancelMatrixEdit() {
+    setDraftPermissions(matrixRole?.permissions ?? []);
+    setMatrixSaveError(null);
+    setMatrixEditing(false);
+  }
+
+  async function saveMatrixPermissions() {
+    if (!matrixRole) return;
+    setMatrixSaving(true);
+    setMatrixSaveError(null);
+    try {
+      const saved = await updateRolePermissions(matrixRole.id, { permissions: draftPermissions });
+      setMatrixRole(saved);
+      setDraftPermissions(saved.permissions ?? []);
+      setMatrixEditing(false);
+      setNotice(`Permissions updated for ${saved.name}.`);
+      await roles.reload();
+      roleStats.reload();
+      await refreshMe().catch(() => {});
+    } catch (err) {
+      setMatrixSaveError(getErrorMessage(err));
+    } finally {
+      setMatrixSaving(false);
+    }
+  }
 
   function handleSearch(event) {
     event.preventDefault();
@@ -148,6 +238,7 @@ export default function StaffPage() {
       await deleteRole(deleteTarget.id);
       setDeleteTarget(null);
       setNotice('Role deleted.');
+      if (matrixRoleId === deleteTarget.id) setMatrixRoleId(null);
       roles.reload();
       roleStats.reload();
     } catch (err) {
@@ -164,12 +255,12 @@ export default function StaffPage() {
         subtitle="Manage staff accounts, permission matrices and sessions."
         actions={
           <div className="stack-inline">
-            {view === 'staff' && (
+            {view === 'staff' && canCreateStaff && (
               <button type="button" className="button button--primary" onClick={() => setCreateOpen(true)}>
                 Create staff
               </button>
             )}
-            {view === 'roles' && (
+            {view === 'roles' && canCreateRole && (
               <button type="button" className="button button--primary" onClick={() => setRoleEditor({ role: null })}>
                 Create role
               </button>
@@ -315,9 +406,16 @@ export default function StaffPage() {
                 </thead>
                 <tbody>
                   {roleOptions.map((role) => (
-                    <tr key={role.id} className={matrixRole?.id === role.id ? 'is-selected-row' : ''}>
+                    <tr key={role.id} className={matrixRole?.id === role.id || matrixRoleId === role.id ? 'is-selected-row' : ''}>
                       <td>
-                        <button type="button" className="linkish" onClick={() => setMatrixRoleId(role.id)}>
+                        <button
+                          type="button"
+                          className="linkish"
+                          onClick={() => {
+                            if (matrixEditing && matrixRoleId !== role.id) cancelMatrixEdit();
+                            setMatrixRoleId(role.id);
+                          }}
+                        >
                           <strong>{role.name}</strong>
                           <div className="muted small">{role.slug}</div>
                         </button>
@@ -331,10 +429,12 @@ export default function StaffPage() {
                       </td>
                       <td>
                         <div className="stack-inline">
-                          <button type="button" className="button button--secondary button--small" onClick={() => setRoleEditor({ role })}>
-                            Edit
-                          </button>
-                          {!role.isSystem && (
+                          {canEditRole && (
+                            <button type="button" className="button button--secondary button--small" onClick={() => setRoleEditor({ role })}>
+                              Edit
+                            </button>
+                          )}
+                          {canDeleteRole && !role.isSystem && (
                             <button type="button" className="button button--danger button--small" onClick={() => setDeleteTarget(role)}>
                               Delete
                             </button>
@@ -349,18 +449,52 @@ export default function StaffPage() {
           </DataTablePanel>
           <DataTablePanel
             title={matrixRole ? `Permissions — ${matrixRole.name}` : 'Permission matrix'}
-            subtitle={matrixRole ? matrixRole.description || formatEnum(matrixRole.slug) : 'Select a role to inspect module access'}
+            subtitle={
+              matrixEditing
+                ? 'Edit mode — toggle VIEW, CREATE, EDIT and DELETE, then save.'
+                : matrixRole
+                  ? matrixRole.description || formatEnum(matrixRole.slug)
+                  : 'Select a role to inspect module access'
+            }
             actions={
-              matrixRole ? (
-                <button type="button" className="button button--primary button--small" onClick={() => setRoleEditor({ role: matrixRole })}>
-                  Edit permissions
-                </button>
+              matrixRole && canEditRole && matrixRole.slug !== 'SUPER_ADMIN' ? (
+                matrixEditing ? (
+                  <div className="stack-inline">
+                    <button type="button" className="button button--secondary button--small" onClick={cancelMatrixEdit} disabled={matrixSaving}>
+                      Cancel
+                    </button>
+                    <button type="button" className="button button--primary button--small" onClick={saveMatrixPermissions} disabled={matrixSaving}>
+                      {matrixSaving ? 'Saving…' : 'Save changes'}
+                    </button>
+                  </div>
+                ) : (
+                  <button type="button" className="button button--primary button--small" onClick={startMatrixEdit}>
+                    Edit permissions
+                  </button>
+                )
+              ) : matrixRole?.slug === 'SUPER_ADMIN' ? (
+                <span className="muted small">Fixed matrix</span>
               ) : null
             }
           >
             <div className="staff-matrix-body">
-              {matrixRole ? (
-                <PermissionMatrix modules={catalog.data?.modules} value={matrixRole.permissions} readOnly onChange={() => {}} />
+              {matrixLoading ? (
+                <LoadingState />
+              ) : matrixError ? (
+                <p className="state state--error">{matrixError}</p>
+              ) : matrixRole ? (
+                <>
+                  {matrixSaveError ? <p className="form-error" role="alert">{matrixSaveError}</p> : null}
+                  {matrixRole.slug === 'SUPER_ADMIN' ? (
+                    <p className="muted small">Super Admin permissions are fixed and cannot be reduced.</p>
+                  ) : null}
+                  <PermissionMatrix
+                    modules={catalog.data?.modules}
+                    value={matrixEditing ? draftPermissions : matrixRole.permissions}
+                    readOnly={!matrixEditing}
+                    onChange={matrixEditing ? setDraftPermissions : () => {}}
+                  />
+                </>
               ) : (
                 <p className="muted">Select a role to inspect its module permissions.</p>
               )}
@@ -383,7 +517,7 @@ export default function StaffPage() {
         />
       )}
 
-      {createOpen && (
+      {createOpen && canCreateStaff && (
         <CreateStaffDialog
           open
           roleOptions={roleOptions}
@@ -403,11 +537,18 @@ export default function StaffPage() {
           role={roleEditor.role}
           catalog={catalog.data}
           onClose={() => setRoleEditor(null)}
-          onSaved={(message) => {
+          onSaved={async (message, meta) => {
             setRoleEditor(null);
             setNotice(message);
-            roles.reload();
+            await roles.reload();
             roleStats.reload();
+            if (meta?.roleId) setMatrixRoleId(meta.roleId);
+            else if (matrixRoleId) setMatrixRoleId(matrixRoleId);
+            if (meta?.slug && me?.role === meta.slug) {
+              await refreshMe().catch(() => {});
+            } else {
+              await refreshMe().catch(() => {});
+            }
           }}
         />
       )}

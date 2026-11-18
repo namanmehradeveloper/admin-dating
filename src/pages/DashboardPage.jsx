@@ -193,7 +193,9 @@ function FollowUpList({ items }) {
 }
 
 export default function DashboardPage() {
-  const { isAdmin } = useAuth();
+  const { hasPermission } = useAuth();
+  const canViewSubscriptions = hasPermission('SUBSCRIPTIONS', 'VIEW');
+  const canViewAuditLogs = hasPermission('AUDIT_LOGS', 'VIEW');
   const range = useInsightRange();
   const { data: result, error, isLoading, reload } = useApi(async () => ({
     payload: checkedPayload(await getDashboard({ from: range.applied.from, to: range.applied.to })),
@@ -222,7 +224,7 @@ export default function DashboardPage() {
         <MetricCard label="Total members" value={count(users.total)} scope="Current total" hint={`${number(users.newToday)} joined today · ${number(users.onlineNow)} online now`} icon={Users} to="/users" />
         <MetricCard label="New members" value={count(users.newInRange)} delta={changes.newUsers} hint="Registrations during the selected period" icon={UserPlus} color="blue" to="/users" />
         <MetricCard label="Active users" value={count(users.activeInRange ?? (period.preset === 7 ? users.activeLast7Days : undefined))} delta={changes.activeUsers} hint="Members active during the selected period" icon={Activity} color="teal" to="/users" />
-        <MetricCard label="Active Plus" value={count(subscriptions.activePremium)} scope="Current total" hint="Members with active Plus access" icon={Crown} color="amber" to={isAdmin ? '/subscriptions' : undefined} />
+        <MetricCard label="Active Plus" value={count(subscriptions.activePremium)} scope="Current total" hint="Members with active Plus access" icon={Crown} color="amber" to={canViewSubscriptions ? '/subscriptions' : undefined} />
         <MetricCard label="Matches created" value={count(matches.createdInRange)} delta={changes.matches} hint={`${number(matches.total)} total · ${number(matches.active)} active · ${number(matches.createdToday)} today`} icon={Heart} color="pink" to="/matches" />
         <MetricCard label="Messages sent" value={count(messages.sentInRange ?? (period.preset === 7 ? messages.sentLast7Days : undefined))} delta={changes.messages} hint={`${number(messages.sentToday)} today · ${number(messages.sentLast7Days)} in the last 7 days`} icon={MessageSquare} color="teal" to="/messaging" />
         <MetricCard label="Verified members" value={count(users.verified)} scope="Current total" hint={`${number(moderation.pendingVerifications)} awaiting verification`} icon={ShieldCheck} to="/verifications" />
@@ -244,9 +246,9 @@ export default function DashboardPage() {
       </div>
       <div className="dashboard-grid-2">
         <section className="card"><div className="card__header"><div><h2>Priority follow-ups</h2><span className="muted small">Members awaiting a review or response</span></div><Link to="/reports" className="button button--secondary button--small">Open queues</Link></div><FollowUpList items={followUp} /></section>
-        <section className="card"><div className="card__header"><div><h2>Recent activity</h2><span className="muted small">The latest updates across your community</span></div>{isAdmin ? <Link to="/audit-logs" className="button button--secondary button--small">Audit logs</Link> : <Link to="/users" className="button button--secondary button--small">View users</Link>}</div><ActivityFeed users={recent?.users} reports={recent?.reports} verifications={recent?.verifications} matches={recent?.matches} tickets={recent?.tickets} /></section>
+        <section className="card"><div className="card__header"><div><h2>Recent activity</h2><span className="muted small">The latest updates across your community</span></div>{canViewAuditLogs ? <Link to="/audit-logs" className="button button--secondary button--small">Audit logs</Link> : <Link to="/users" className="button button--secondary button--small">View users</Link>}</div><ActivityFeed users={recent?.users} reports={recent?.reports} verifications={recent?.verifications} matches={recent?.matches} tickets={recent?.tickets} /></section>
       </div>
-      <ReportingAvailability revenue={revenue} isAdmin={isAdmin} />
+      <ReportingAvailability revenue={revenue} isAdmin={canViewSubscriptions} />
     </>}
   </div>;
 }

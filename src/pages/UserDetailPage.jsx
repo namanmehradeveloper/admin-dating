@@ -259,7 +259,11 @@ function DatingTools({ tab, dating, interestsCatalog, accountProfile, userId, on
 
 export default function UserDetailPage() {
   const { userId } = useParams();
-  const { user: staff, isAdmin } = useAuth();
+  const { user: staff, hasPermission } = useAuth();
+  const canEditUser = hasPermission('USERS', 'EDIT');
+  const canDeleteUser = hasPermission('USERS', 'DELETE');
+  const canViewSubscriptions = hasPermission('SUBSCRIPTIONS', 'VIEW');
+  const canViewFullContact = hasPermission('STAFF', 'VIEW') || staff?.isAdminTier;
   const { data: account, setData, error, isLoading, reload } = useApi(() => getUser(userId), [userId], { poll: false });
   const dating = useApi(
     () =>
@@ -358,17 +362,17 @@ export default function UserDetailPage() {
           </div>
         </div>
         <div className="page-header__actions">
-          {statusOptions.length > 0 && (
+          {canEditUser && statusOptions.length > 0 && (
             <button type="button" className="button button--primary" onClick={() => setIsDialogOpen(true)}>
               Change status
             </button>
           )}
-          {isAdmin && (
+          {canDeleteUser && (
             <button type="button" className="button button--secondary" onClick={handleExport} disabled={busyExport}>
               <Download size={16} aria-hidden /> {busyExport ? 'Exporting…' : 'Export data'}
             </button>
           )}
-          {isAdmin && account.role === 'USER' && account.deletion?.status !== 'SCHEDULED' && (
+          {canDeleteUser && account.role === 'USER' && account.deletion?.status !== 'SCHEDULED' && (
             <button type="button" className="button button--danger" onClick={() => setIsDeleteOpen(true)}>
               <Trash2 size={16} aria-hidden /> Delete
             </button>
@@ -406,7 +410,7 @@ export default function UserDetailPage() {
           label="Plan"
           value={formatEnum(account.entitlement.tier)}
           hint={account.entitlement.expiresAt ? `Expires ${formatDate(account.entitlement.expiresAt)}` : 'No expiry'}
-          to={isAdmin ? `/subscriptions/${account.id}` : undefined}
+          to={canViewSubscriptions ? `/subscriptions/${account.id}` : undefined}
           icon={Wallet}
           tone="warning"
         />
@@ -457,7 +461,7 @@ export default function UserDetailPage() {
               ['Last active', formatDateTime(account.lastActiveAt)],
             ]}
           />
-          {!isAdmin && <p className="muted small">Phone numbers and emails are partly hidden for moderators.</p>}
+          {!canViewFullContact && <p className="muted small">Phone numbers and emails are partly hidden for your role.</p>}
         </section>
 
         <section className="card">

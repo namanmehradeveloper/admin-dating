@@ -17,7 +17,8 @@ import { formatDateTime, formatEnum } from '../utils/format.js';
 
 export default function CmsDetailPage() {
   const { cmsId } = useParams();
-  const { isAdmin } = useAuth();
+  const { hasPermission } = useAuth();
+  const canEditCms = hasPermission('CMS', 'EDIT');
   const { data, setData, error, isLoading, reload } = useApi(() => getCms(cmsId), [cmsId], { poll: false });
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -64,7 +65,7 @@ export default function CmsDetailPage() {
         />
       </section>
 
-      {isAdmin ? (
+      {canEditCms ? (
         <section className="card">
           <h2>Edit</h2>
           <label className="field">

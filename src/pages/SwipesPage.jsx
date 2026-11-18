@@ -325,7 +325,9 @@ function EntitlementsPanel({ onSaved }) {
 }
 
 export default function SwipesPage() {
-  const { isAdmin } = useAuth();
+  const { hasPermission } = useAuth();
+  const canViewSwipes = hasPermission('SWIPES', 'VIEW');
+  const canEditSwipes = hasPermission('SWIPES', 'EDIT');
   const [days, setDays] = useState(7);
   const [view, setView] = useState('overview');
   const [userId, setUserId] = useState('');
@@ -337,10 +339,10 @@ export default function SwipesPage() {
     () => (view === 'analytics' || view === 'overview' ? getSwipeAnalytics({ days }) : Promise.resolve(null)),
     [days, view],
   );
-  const abuse = useApi(() => (view === 'abuse' && isAdmin ? listSwipeAbuse() : Promise.resolve(null)), [view, isAdmin]);
+  const abuse = useApi(() => (view === 'abuse' && canViewSwipes ? listSwipeAbuse() : Promise.resolve(null)), [view, canViewSwipes]);
   const report = useApi(
-    () => (filters.userId && view === 'investigate' && isAdmin ? getMemberSwipeReport(filters.userId) : Promise.resolve(null)),
-    [filters.userId, view, isAdmin],
+    () => (filters.userId && view === 'investigate' && canViewSwipes ? getMemberSwipeReport(filters.userId) : Promise.resolve(null)),
+    [filters.userId, view, canViewSwipes],
   );
 
   function handleInvestigate(event) {
@@ -351,7 +353,7 @@ export default function SwipesPage() {
     setView('investigate');
   }
 
-  const adminViews = isAdmin ? VIEWS : VIEWS.filter((item) => item.value === 'overview' || item.value === 'analytics');
+  const adminViews = canViewSwipes ? VIEWS : VIEWS.filter((item) => item.value === 'overview' || item.value === 'analytics');
   const series = analytics.data?.series ?? [];
   const actionMix = analytics.data?.actionMix ?? {};
   const performanceItems = (analytics.data?.recommendationPerformance ?? []).map((row) => ({
@@ -614,7 +616,7 @@ export default function SwipesPage() {
               </p>
             </div>
           </header>
-          {!isAdmin ? (
+          {!canViewSwipes ? (
             <div className="panel-pad">
               <Notice>Abuse investigation requires ADMIN.</Notice>
             </div>
@@ -687,7 +689,7 @@ export default function SwipesPage() {
 
       {view === 'investigate' && (
         <>
-          {!isAdmin ? (
+          {!canViewSwipes ? (
             <Notice>Per-member swipe lists and pass history require ADMIN.</Notice>
           ) : (
             <>
@@ -779,7 +781,7 @@ export default function SwipesPage() {
       )}
 
       {view === 'entitlements' &&
-        (isAdmin ? (
+        (canEditSwipes ? (
           <EntitlementsPanel
             onSaved={(message) => {
               setNotice(message);

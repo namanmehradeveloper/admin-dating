@@ -11,6 +11,7 @@ import {
   updateStaffStatus,
 } from '../../api/staff.api.js';
 import { useApi } from '../../hooks/useApi.js';
+import { useAuth } from '../../hooks/useAuth.js';
 import { usePaginatedList } from '../../hooks/usePaginatedList.js';
 import { getErrorMessage } from '../../utils/errors.js';
 import { formatDateTime, formatEnum } from '../../utils/format.js';
@@ -28,6 +29,8 @@ const TABS = [
 ];
 
 export default function StaffDetailDrawer({ userId, me, roleOptions, onClose, onChanged }) {
+  const { hasPermission } = useAuth();
+  const canEditStaff = hasPermission('STAFF', 'EDIT');
   const detail = useApi(() => getStaff(userId), [userId], { poll: false });
   const [tab, setTab] = useState('overview');
   const [notice, setNotice] = useState(null);
@@ -142,7 +145,7 @@ export default function StaffDetailDrawer({ userId, me, roleOptions, onClose, on
                       ['Last active', formatDateTime(staff.lastActiveAt)],
                     ]}
                   />
-                  {!isSelf && (
+                  {!isSelf && canEditStaff && (
                     <>
                       <label className="field">
                         <span>Assign role</span>
@@ -174,6 +177,7 @@ export default function StaffDetailDrawer({ userId, me, roleOptions, onClose, on
                     </>
                   )}
                   {isSelf && <p className="muted small">You cannot change your own role or status here.</p>}
+                  {!isSelf && !canEditStaff && <p className="muted small">You can view this staff account but cannot change role or status.</p>}
                 </div>
               )}
 

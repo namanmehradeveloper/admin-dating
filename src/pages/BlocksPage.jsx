@@ -85,7 +85,8 @@ function BlockTrendChart({ series, days }) {
 }
 
 export default function BlocksPage() {
-  const { isAdmin } = useAuth();
+  const { hasPermission } = useAuth();
+  const canViewBlocks = hasPermission('BLOCKS', 'VIEW');
   const [days, setDays] = useState(7);
   const [view, setView] = useState('overview');
   const [searchText, setSearchText] = useState('');
@@ -99,14 +100,14 @@ export default function BlocksPage() {
 
   const stats = useApi(() => getBlockStats({ days }), [days]);
   const analytics = useApi(() => (view === 'analytics' ? getBlockAnalytics({ days }) : Promise.resolve(null)), [days, view]);
-  const velocity = useApi(() => (view === 'velocity' && isAdmin ? listBlockVelocity() : Promise.resolve(null)), [view, isAdmin]);
+  const velocity = useApi(() => (view === 'velocity' && canViewBlocks ? listBlockVelocity() : Promise.resolve(null)), [view, canViewBlocks]);
   const report = useApi(
-    () => (memberId && view === 'investigate' && isAdmin ? getMemberBlockReport(memberId) : Promise.resolve(null)),
-    [memberId, view, isAdmin],
+    () => (memberId && view === 'investigate' && canViewBlocks ? getMemberBlockReport(memberId) : Promise.resolve(null)),
+    [memberId, view, canViewBlocks],
   );
   const list = usePaginatedList(listBlocks, filters);
 
-  const adminViews = isAdmin ? VIEWS : VIEWS.filter((item) => !['velocity', 'investigate'].includes(item.value));
+  const adminViews = canViewBlocks ? VIEWS : VIEWS.filter((item) => !['velocity', 'investigate'].includes(item.value));
 
   function applyFilters(event) {
     event.preventDefault();
@@ -316,7 +317,7 @@ export default function BlocksPage() {
 
       {view === 'velocity' && (
         <DataTablePanel title="Block velocity queue" subtitle="Members who created many blocks in the last 24 hours (possible spam or harassment patterns).">
-          {!isAdmin ? (
+          {!canViewBlocks ? (
             <Notice>Velocity investigation requires ADMIN.</Notice>
           ) : velocity.isLoading && !velocity.data ? (
             <LoadingState />
@@ -381,7 +382,7 @@ export default function BlocksPage() {
 
       {view === 'investigate' && (
         <>
-          {!isAdmin ? (
+          {!canViewBlocks ? (
             <Notice>Per-member block reports require ADMIN.</Notice>
           ) : (
             <>

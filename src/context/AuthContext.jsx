@@ -61,6 +61,25 @@ export function AuthProvider({ children }) {
       .finally(() => setIsRestoring(false));
   }, [refreshMe]);
 
+  // Re-load role permissions so matrix edits take effect for open admin sessions without a re-login.
+  const signedInUserId = user?.id;
+  useEffect(() => {
+    if (!signedInUserId) return undefined;
+
+    const syncPermissions = () => {
+      if (!getRefreshToken()) return;
+      refreshMe().catch(() => {});
+    };
+
+    const onFocus = () => syncPermissions();
+    window.addEventListener('focus', onFocus);
+    const intervalId = window.setInterval(syncPermissions, 15_000);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      window.clearInterval(intervalId);
+    };
+  }, [signedInUserId, refreshMe]);
+
   // Other tabs: adopt a new login, or mirror logout / session expiry. Token rotation is handled by
   // the shared storage + axios lock; this tab only needs a profile when another tab signs in.
   useEffect(() => {

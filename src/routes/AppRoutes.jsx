@@ -1,4 +1,4 @@
-// All admin routes. Every page except /login needs a staff session; some need the ADMIN role.
+// All admin routes. Pages are gated by module VIEW permissions from /admin/me (API enforces too).
 
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
@@ -41,7 +41,6 @@ import VerificationDetailPage from '../pages/VerificationDetailPage.jsx';
 import VerificationsPage from '../pages/VerificationsPage.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 
-// Loaded on demand so the chart library is not part of the initial bundle.
 const DashboardPage = lazy(() => import('../pages/DashboardPage.jsx'));
 
 export default function AppRoutes() {
@@ -51,52 +50,98 @@ export default function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AdminLayout />}>
           <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route
-            path="/dashboard"
-            element={
-              <Suspense fallback={<LoadingState />}>
-                <DashboardPage />
-              </Suspense>
-            }
-          />
-          <Route path="/users" element={<UsersPage />} />
-          <Route path="/users/:userId" element={<UserDetailPage />} />
+
+          <Route element={<ProtectedRoute permission="DASHBOARD.VIEW" />}>
+            <Route
+              path="/dashboard"
+              element={
+                <Suspense fallback={<LoadingState />}>
+                  <DashboardPage />
+                </Suspense>
+              }
+            />
+          </Route>
+
+          <Route element={<ProtectedRoute permission="USERS.VIEW" />}>
+            <Route path="/users" element={<UsersPage />} />
+            <Route path="/users/:userId" element={<UserDetailPage />} />
+          </Route>
           <Route path="/profiles" element={<Navigate to="/users" replace />} />
-          <Route path="/matches" element={<MatchesPage />} />
-          <Route path="/swipes" element={<SwipesPage />} />
-          <Route path="/messaging" element={<MessagingPage />} />
-          <Route path="/blocks" element={<BlocksPage />} />
-          <Route path="/analytics" element={<AnalyticsPage />} />
-          <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/reports/:reportId" element={<ReportDetailPage />} />
-          <Route path="/verifications" element={<VerificationsPage />} />
-          <Route path="/verifications/:verificationId" element={<VerificationDetailPage />} />
-          <Route path="/fraud" element={<FraudPage />} />
-          <Route path="/support" element={<SupportPage />} />
-          <Route path="/support/:ticketId" element={<TicketDetailPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/cms" element={<CmsPage />} />
-          <Route path="/cms/:cmsId" element={<CmsDetailPage />} />
+
+          <Route element={<ProtectedRoute permission="MATCHES.VIEW" />}>
+            <Route path="/matches" element={<MatchesPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="SWIPES.VIEW" />}>
+            <Route path="/swipes" element={<SwipesPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="MESSAGING.VIEW" />}>
+            <Route path="/messaging" element={<MessagingPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="BLOCKS.VIEW" />}>
+            <Route path="/blocks" element={<BlocksPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="ANALYTICS.VIEW" />}>
+            <Route path="/analytics" element={<AnalyticsPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="REPORTS.VIEW" />}>
+            <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/reports/:reportId" element={<ReportDetailPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="VERIFICATIONS.VIEW" />}>
+            <Route path="/verifications" element={<VerificationsPage />} />
+            <Route path="/verifications/:verificationId" element={<VerificationDetailPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="FRAUD.VIEW" />}>
+            <Route path="/fraud" element={<FraudPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="SUPPORT.VIEW" />}>
+            <Route path="/support" element={<SupportPage />} />
+            <Route path="/support/:ticketId" element={<TicketDetailPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="NOTIFICATIONS.VIEW" />}>
+            <Route path="/notifications" element={<NotificationsPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="CMS.VIEW" />}>
+            <Route path="/cms" element={<CmsPage />} />
+            <Route path="/cms/:cmsId" element={<CmsDetailPage />} />
+          </Route>
           <Route element={<ProtectedRoute permission="AUDIT_LOGS.VIEW" />}>
             <Route path="/security/login-activity" element={<LoginActivityPage />} />
+            <Route path="/audit-logs" element={<AuditLogsPage />} />
           </Route>
-          <Route element={<ProtectedRoute roles={['ADMIN']} />}>
+          <Route element={<ProtectedRoute permission="STAFF.VIEW" />}>
             <Route path="/staff" element={<StaffPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="SUBSCRIPTIONS.VIEW" />}>
             <Route path="/subscriptions" element={<SubscriptionsPage />} />
             <Route path="/subscriptions/analytics" element={<SubscriptionAnalyticsPage />} />
             <Route path="/subscriptions/plans" element={<SubscriptionPlansPage />} />
             <Route path="/subscriptions/:userId" element={<SubscriptionDetailPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="PAYMENTS.VIEW" />}>
             <Route path="/payments" element={<PaymentsPage />} />
             <Route path="/payments/:paymentId" element={<PaymentDetailPage />} />
-            <Route path="/coupons" element={<CouponsPage />} />
             <Route path="/store" element={<StorePage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="COUPONS.VIEW" />}>
+            <Route path="/coupons" element={<CouponsPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="REFERRALS.VIEW" />}>
             <Route path="/referrals" element={<ReferralsPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="CALLS.VIEW" />}>
             <Route path="/calls" element={<CallsPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="EXPERIMENTS.VIEW" />}>
             <Route path="/experiments" element={<ExperimentsPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="MONITORING.VIEW" />}>
             <Route path="/monitoring" element={<MonitoringPage />} />
-            <Route path="/audit-logs" element={<AuditLogsPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="SETTINGS.VIEW" />}>
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
+
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>
