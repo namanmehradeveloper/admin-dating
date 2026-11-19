@@ -867,13 +867,17 @@ Stores `contactName` / `contactEmail` on every ticket. Guests must send `name` +
 
 ---
 
+### `POST /support/tickets`
+
+Auth optional. **Header `Idempotency-Key` (UUID) required.** Body: category, subject, message (+ name/email for guests). Atomic daily quota: 5/user or 5/IP. Same key + same body replays the original `201`; same key + different body → `409`. Exhausted quota → `429 RATE_LIMITED`.
+
 ### `GET /support/tickets`
 
 Auth required. Lists the signed-in member's own tickets (cursor pagination). Guests cannot call this.
 
 ### `POST /support/tickets/:ticketId/messages`
 
-Auth required. Owner follow-up reply `{ "body" }` (1–5000). Rate limit 30/hour. `CLOSED` → `409`. Sets non-closed tickets to `IN_PROGRESS`.
+Auth required. **Header `Idempotency-Key` (UUID) required.** Owner follow-up reply `{ "body" }` (1–5000). Rate limit 30/hour. `CLOSED` → `409`. Sets non-closed tickets to `IN_PROGRESS`. Idempotent replay / concurrent same-key dedupe.
 
 ### `GET /support/tickets/:ticketId`
 
