@@ -222,83 +222,16 @@ function PhotosTab({ profile, onChanged }) {
   );
 }
 
-function AccountCredentialsSection({ profile, onChanged }) {
-  const [phoneNumber, setPhoneNumber] = useState(profile.phoneNumber ?? '');
-  const [reason, setReason] = useState('');
-  const [error, setError] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
+const E164_PHONE = /^\+[1-9]\d{7,14}$/;
 
-  useEffect(() => {
-    setPhoneNumber(profile.phoneNumber ?? '');
-    setReason('');
-  }, [profile]);
-
-  const phoneChanged = phoneNumber.trim() !== (profile.phoneNumber ?? '');
-
-  async function handleSave() {
-    setIsSaving(true);
-    setError(null);
-    try {
-      await updateProfileAccount(profile.id, {
-        reason: reason.trim(),
-        phoneNumber: phoneNumber.trim() || null,
-      });
-      setConfirmOpen(false);
-      onChanged('Phone number updated.');
-    } catch (saveError) {
-      setError(getErrorMessage(saveError));
-    } finally {
-      setIsSaving(false);
-    }
-  }
-
-  return (
-    <div className="drawer-stack">
-      <h3>Account access</h3>
-      <p className="muted small">Members sign in with phone OTP. Update the E.164 number (e.g. +919876543210) if needed.</p>
-      <label className="field">
-        <span>Phone number</span>
-        <input
-          type="tel"
-          value={phoneNumber}
-          placeholder="+919876543210"
-          autoComplete="off"
-          onChange={(event) => setPhoneNumber(event.target.value)}
-        />
-      </label>
-      <button type="button" className="button button--secondary" disabled={!phoneChanged} onClick={() => setConfirmOpen(true)}>
-        Update phone
-      </button>
-
-      {confirmOpen && (
-        <ConfirmDialog
-          open
-          title="Update phone number"
-          message="This is audited and updates the member phone number used for OTP login."
-          confirmLabel="Save"
-          isBusy={isSaving}
-          error={error}
-          confirmDisabled={reason.trim().length < 3 || !phoneChanged}
-          onConfirm={handleSave}
-          onCancel={() => {
-            setConfirmOpen(false);
-            setError(null);
-          }}
-        >
-          <label className="field">
-            <span>Reason (3–500 characters)</span>
-            <textarea rows={3} maxLength={500} value={reason} onChange={(event) => setReason(event.target.value)} />
-          </label>
-        </ConfirmDialog>
-      )}
-    </div>
-  );
+function isValidE164(value) {
+  return E164_PHONE.test(value.trim());
 }
 
 export function EditTab({ profile, interestsCatalog, onChanged }) {
   const { isAdmin } = useAuth();
   const [form, setForm] = useState({
+    phoneNumber: profile.phoneNumber ?? '',
     displayName: profile.displayName ?? '',
     bio: profile.bio ?? '',
     city: profile.city ?? '',
@@ -315,6 +248,7 @@ export function EditTab({ profile, interestsCatalog, onChanged }) {
 
   useEffect(() => {
     setForm({
+      phoneNumber: profile.phoneNumber ?? '',
       displayName: profile.displayName ?? '',
       bio: profile.bio ?? '',
       city: profile.city ?? '',
@@ -326,6 +260,11 @@ export function EditTab({ profile, interestsCatalog, onChanged }) {
       reason: '',
     });
   }, [profile]);
+
+  const phoneTrimmed = form.phoneNumber.trim();
+  const phoneChanged = isAdmin && phoneTrimmed !== (profile.phoneNumber ?? '');
+  const phoneInvalid = isAdmin && phoneTrimmed.length > 0 && !isValidE164(phoneTrimmed);
+  const phoneMissing = isAdmin && phoneChanged && !phoneTrimmed;
 
   function toggleInterest(id) {
     setForm((current) => {
@@ -339,8 +278,19 @@ export function EditTab({ profile, interestsCatalog, onChanged }) {
     setIsSaving(true);
     setError(null);
     try {
+      const reason = form.reason.trim();
+      if (phoneChanged) {
+        if (!isValidE164(phoneTrimmed)) {
+          throw new Error('Phone must be E.164 format, e.g. +919876543210.');
+        }
+        await updateProfileAccount(profile.id, {
+          reason,
+          phoneNumber: phoneTrimmed,
+        });
+      }
+
       const body = {
-        reason: form.reason.trim(),
+        reason,
         displayName: form.displayName.trim(),
         bio: form.bio,
         city: form.city,
@@ -355,7 +305,7 @@ export function EditTab({ profile, interestsCatalog, onChanged }) {
       }
       await updateProfile(profile.id, body);
       setConfirmOpen(false);
-      onChanged('Profile updated.');
+      onChanged(phoneChanged ? 'Profile and phone number updated.' : 'Profile updated.');
     } catch (saveError) {
       setError(getErrorMessage(saveError));
     } finally {
@@ -363,15 +313,29 @@ export function EditTab({ profile, interestsCatalog, onChanged }) {
     }
   }
 
+  const canConfirm =
+    form.reason.trim().length >= 3 &&
+    form.displayName.trim().length >= 1 &&
+    !phoneInvalid &&
+    !phoneMissing;
+
   return (
     <div className="drawer-stack">
-      {isAdmin && (
-        <>
-          <AccountCredentialsSection profile={profile} onChanged={onChanged} />
-          <hr className="drawer-divider" />
-        </>
-      )}
       <p className="muted small">Corrections are audited. Provide a reason before saving.</p>
+      {isAdmin && (
+        <label className="field">
+          <span>Phone number (OTP login)</span>
+          <input
+            type="tel"
+            value={form.phoneNumber}
+            placeholder="+919876543210"
+            autoComplete="off"
+            onChange={(event) => setForm((c) => ({ ...c, phoneNumber: event.target.value }))}
+          />
+          {phoneInvalid && <span className="form-error">Use country code format, e.g. +919876543210</span>}
+          {phoneChanged && !phoneInvalid && <span className="muted small">Will update with Save corrections.</span>}
+        </label>
+      )}
       <label className="field">
         <span>Display name</span>
         <input value={form.displayName} maxLength={40} onChange={(event) => setForm((c) => ({ ...c, displayName: event.target.value }))} />
@@ -434,7 +398,7 @@ export function EditTab({ profile, interestsCatalog, onChanged }) {
           rows={Object.entries(profile.basics).map(([key, value]) => [formatEnum(key), formatEnum(value)])}
         />
       )}
-      <button type="button" className="button button--primary" onClick={() => setConfirmOpen(true)}>
+      <button type="button" className="button button--primary" onClick={() => setConfirmOpen(true)} disabled={phoneInvalid || phoneMissing}>
         Save corrections
       </button>
 
@@ -442,11 +406,15 @@ export function EditTab({ profile, interestsCatalog, onChanged }) {
         <ConfirmDialog
           open
           title="Save profile corrections"
-          message="This writes an audit log entry with before/after values."
+          message={
+            phoneChanged
+              ? 'This updates the profile and phone number (OTP login), and writes an audit log.'
+              : 'This writes an audit log entry with before/after values.'
+          }
           confirmLabel="Save"
           isBusy={isSaving}
           error={error}
-          confirmDisabled={form.reason.trim().length < 3 || !form.displayName.trim()}
+          confirmDisabled={!canConfirm}
           onConfirm={handleSave}
           onCancel={() => {
             setConfirmOpen(false);
