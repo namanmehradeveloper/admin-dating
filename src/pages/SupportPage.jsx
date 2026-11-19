@@ -54,7 +54,7 @@ export default function SupportPage() {
             value={searchText}
             onChange={setSearchText}
             onClear={() => setFilters((current) => ({ ...current, q: '' }))}
-            placeholder="Search subject, ticket ID, or user ID"
+            placeholder="Search subject, ticket ID, user ID, name, or email"
           />
           <button type="submit" className="button button--primary">
             Search
@@ -66,12 +66,22 @@ export default function SupportPage() {
         <ListView
           list={list}
           emptyMessage="No tickets match these filters."
-          columns={['Subject', 'Member', 'Category', 'Status', 'Messages', 'Last message', 'Created']}
+          columns={['Subject', 'Member', 'Contact', 'Category', 'Status', 'Messages', 'Last message', 'Created']}
           renderRow={(ticket) => (
             <LinkRow key={ticket.id} to={`/support/${ticket.id}`}>
               <td><EllipsisText>{ticket.subject}</EllipsisText></td>
               <td>
-                <UserCell user={ticket.user} link={false} />
+                {ticket.user ? (
+                  <UserCell user={ticket.user} link={false} />
+                ) : (
+                  <span className="muted">Guest</span>
+                )}
+              </td>
+              <td>
+                <EllipsisText title={[ticket.contactName, ticket.contactEmail].filter(Boolean).join(' · ') || undefined}>
+                  {ticket.contactName || '—'}
+                  {ticket.contactEmail ? <span className="muted small"> · {ticket.contactEmail}</span> : null}
+                </EllipsisText>
               </td>
               <td><EllipsisText>{formatEnum(ticket.category)}</EllipsisText></td>
               <td>

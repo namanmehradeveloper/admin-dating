@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getTicket, replyToTicket, updateTicketStatus } from '../api/support.api.js';
 import ConfirmDialog from '../components/ConfirmDialog.jsx';
+import DetailList from '../components/DetailList.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import LoadingState from '../components/LoadingState.jsx';
 import Notice from '../components/Notice.jsx';
@@ -43,7 +44,14 @@ export default function TicketDetailPage() {
   // Sends the staff reply.
   async function handleReply(event) {
     event.preventDefault();
-    if (await runAction(() => replyToTicket(ticketId, reply.trim()), 'Reply sent. The member was notified.')) setReply('');
+    if (
+      await runAction(
+        () => replyToTicket(ticketId, reply.trim()),
+        ticket.user ? 'Reply sent. The member was notified.' : 'Reply sent. Guest tickets have no in-app notification.',
+      )
+    ) {
+      setReply('');
+    }
   }
 
   // Changes the status right away, except CLOSED which asks for confirmation first.
@@ -80,14 +88,26 @@ export default function TicketDetailPage() {
 
       <section className="card">
         <div className="card__header">
-          <UserCell user={ticket.user} />
+          {ticket.user ? <UserCell user={ticket.user} /> : <span className="user-cell"><span className="user-cell__name">Guest</span></span>}
           <StatusBadge value={ticket.status} />
         </div>
+        <DetailList
+          rows={[
+            ['Contact name', ticket.contactName || '—'],
+            ['Contact email', ticket.contactEmail ? <a href={`mailto:${ticket.contactEmail}`}>{ticket.contactEmail}</a> : '—'],
+          ]}
+        />
         <ol className="thread">
           {ticket.messages.map((message) => (
             <li key={message.id} className={message.author === 'STAFF' ? 'thread__message thread__message--staff' : 'thread__message'}>
               <div className="thread__meta">
-                <strong>{message.author === 'STAFF' ? `Staff · ${message.authorUser?.displayName ?? ''}` : 'Member'}</strong>
+                <strong>
+                  {message.author === 'STAFF'
+                    ? `Staff · ${message.authorUser?.displayName ?? ''}`
+                    : ticket.user
+                      ? 'Member'
+                      : 'Guest'}
+                </strong>
                 <span className="muted small">{formatDateTime(message.createdAt)}</span>
               </div>
               <p className="thread__body">{message.body}</p>

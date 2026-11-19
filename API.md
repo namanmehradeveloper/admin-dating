@@ -637,7 +637,7 @@ Auth required. The **recipient** marks this incoming message and every earlier i
 
 ### `DELETE /conversations/:conversationId`
 
-Auth required. Soft-deletes the chat **for the current member only** (`hiddenFor`). The other member keeps the conversation. Emitting `conversation:deleted` to the caller. A later message from either side brings the chat back for both.
+Auth required. Soft-deletes the chat **for the current member only** (`hiddenFor`). The other member keeps the conversation. Emitting `conversation:deleted` to the caller. A later message restores visibility for the **recipient** only (sender's own `hiddenFor` entry is preserved). Messages are never deleted.
 
 ---
 
@@ -737,6 +737,14 @@ Auth required. Stop push notifications for that device (e.g. on logout of this d
 
 ---
 
+### `GET /notifications/unread-count`
+
+Auth required. Returns `{ "count": number }` for the signed-in member only.
+
+### `POST /notifications/read-all`
+
+Auth required. Marks every unread notification owned by the caller. Response `{ "updated": number }`.
+
 ### `GET /notifications`
 
 Auth required. In-app notification inbox, newest first.
@@ -835,10 +843,14 @@ Public. FAQ list for Help screens.
 
 ### `POST /support/tickets`
 
-Auth required. Open a support ticket. **5 per day.**
+Auth **optional**. Open a support ticket. Authenticated: **5 per day per user**. Guest: **5 per day per IP**.
+
+Stores `contactName` / `contactEmail` on every ticket. Guests must send `name` + `email`. Authenticated clients may omit them (backfilled from profile display name and account email). Guest tickets have `userId: null`.
 
 ```json
 {
+  "name": "Alex Kumar",
+  "email": "alex@example.com",
   "category": "ACCOUNT",
   "subject": "Cannot sign in",
   "message": "Detailed description of the issue..."
@@ -850,8 +862,18 @@ Auth required. Open a support ticket. **5 per day.**
 | `category` | `ACCOUNT`, `BILLING`, `SAFETY`, `BUG`, `OTHER` |
 | `subject` | 3–120 characters |
 | `message` | 10–5000 characters |
+| `name` | Guest required (1–80). Auth optional. |
+| `email` | Guest required (valid email). Auth optional. |
 
 ---
+
+### `GET /support/tickets`
+
+Auth required. Lists the signed-in member's own tickets (cursor pagination). Guests cannot call this.
+
+### `POST /support/tickets/:ticketId/messages`
+
+Auth required. Owner follow-up reply `{ "body" }` (1–5000). Rate limit 30/hour. `CLOSED` → `409`. Sets non-closed tickets to `IN_PROGRESS`.
 
 ### `GET /support/tickets/:ticketId`
 
@@ -967,6 +989,8 @@ Acks look like `{ ok: true }` or `{ ok: false, error: { code, message } }`.
 | POST | `/devices` | Yes | Register push |
 | DELETE | `/devices/:deviceId` | Yes | Remove device |
 | GET | `/notifications` | Yes | Inbox |
+| GET | `/notifications/unread-count` | Yes | Unread badge |
+| POST | `/notifications/read-all` | Yes | Mark all read |
 | POST | `/notifications/:id/read` | Yes | Mark read |
 | GET | `/notification-preferences` | Yes | Get prefs |
 | PATCH | `/notification-preferences` | Yes | Update prefs |
@@ -976,7 +1000,9 @@ Acks look like `{ ok: true }` or `{ ok: false, error: { code, message } }`.
 | POST | `/subscriptions/restore` | Yes | 501 until configured |
 | GET | `/support/faqs` | No | FAQs |
 | POST | `/support/tickets` | Yes | New ticket |
+| GET | `/support/tickets` | Yes | Own ticket list |
 | GET | `/support/tickets/:ticketId` | Yes | Ticket detail |
+| POST | `/support/tickets/:ticketId/messages` | Yes | Member follow-up reply |
 | POST | `/account/deletion-request` | Yes | Delete account (202) |
 | GET | `/account/export-status` | Yes | Export status |
 
