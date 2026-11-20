@@ -4,8 +4,8 @@
   --bg: #f5f6fa;
   --surface: #ffffff;
   --border: #e3e6ef;
-  --text: #1d2233;
-  --muted: #687089;
+  --text: #111827;
+  --muted: #3f4b63;
   --primary: #5b4bdb;
   --primary-dark: #4637b8;
   --danger: #d0384b;
@@ -24,7 +24,7 @@
   --sidebar-active: #5b4bdb;
   --sidebar-active-soft: rgba(91, 75, 219, 0.22);
   --table-head-bg: #ece9fb;
-  --table-head-text: #3d3488;
+  --table-head-text: #352b7a;
   --table-row-bg: #ffffff;
   --table-row-alt: #f7f6fd;
   --table-row-hover: #f0edfb;
@@ -45,8 +45,8 @@ html[data-theme='dark'] {
   --bg: #12141c;
   --surface: #1b1f2b;
   --border: #2d3344;
-  --text: #e8eaf2;
-  --muted: #9aa3b8;
+  --text: #f4f6fc;
+  --muted: #b4bfd4;
   --primary: #7b6cf0;
   --primary-dark: #9588f5;
   --danger: #e85a6c;
@@ -65,7 +65,7 @@ html[data-theme='dark'] {
   --sidebar-active: #7b6cf0;
   --sidebar-active-soft: rgba(123, 108, 240, 0.2);
   --table-head-bg: #25203a;
-  --table-head-text: #d8d2ff;
+  --table-head-text: #e2dbff;
   --table-row-bg: #1b1f2b;
   --table-row-alt: #201c2e;
   --table-row-hover: #2a2640;
@@ -106,6 +106,7 @@ a {
 
 .muted {
   color: var(--muted);
+  font-weight: 550;
 }
 
 .small {
@@ -1638,9 +1639,10 @@ html[data-theme='dark'] .dashboard-page .page-header .muted {
 
 .table th {
   font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: var(--muted);
+  color: var(--table-head-text);
   white-space: nowrap;
 }
 
@@ -1666,7 +1668,7 @@ html[data-theme='dark'] .dashboard-page .page-header .muted {
 .table.data-table thead th {
   background: var(--table-head-bg);
   color: var(--table-head-text);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 11px;
   text-transform: none;
   letter-spacing: 0.02em;
@@ -1787,7 +1789,7 @@ html[data-theme='dark'] .dashboard-page .page-header .muted {
 .table-pagination__meta {
   margin: 0;
   font-size: 0.84rem;
-  font-weight: 550;
+  font-weight: 600;
   color: var(--muted);
   display: inline-flex;
   align-items: center;
@@ -2183,7 +2185,8 @@ a.user-cell:hover span:last-child {
 }
 
 .field > span {
-  font-weight: 500;
+  font-weight: 650;
+  color: var(--text);
 }
 
 .field--inline {
@@ -2218,7 +2221,9 @@ a.user-cell:hover span:last-child {
 
 .field input::placeholder,
 .field textarea::placeholder {
-  color: color-mix(in srgb, var(--muted) 85%, transparent);
+  color: color-mix(in srgb, var(--muted) 92%, var(--text));
+  font-weight: 500;
+  opacity: 1;
 }
 
 .field select option,
@@ -3212,7 +3217,7 @@ html[data-theme='dark'] .users-kpi--online .users-kpi__icon {
 .users-kpi__label {
   font-size: 0.78rem;
   color: var(--muted);
-  font-weight: 500;
+  font-weight: 650;
 }
 
 .users-kpi__value {
@@ -3239,10 +3244,10 @@ html[data-theme='dark'] .users-kpi--online .users-kpi__icon {
 .users-chip {
   border: 1px solid var(--border);
   background: var(--control-bg-soft);
-  color: var(--muted);
+  color: var(--text);
   font: inherit;
   font-size: 0.82rem;
-  font-weight: 500;
+  font-weight: 600;
   padding: 0.4rem 0.75rem;
   border-radius: 999px;
   cursor: pointer;
@@ -3362,7 +3367,9 @@ html[data-theme='dark'] .users-kpi--online .users-kpi__icon {
 
 .admin-search input::placeholder,
 .users-search input::placeholder {
-  color: color-mix(in srgb, var(--muted) 85%, transparent);
+  color: color-mix(in srgb, var(--muted) 92%, var(--text));
+  font-weight: 500;
+  opacity: 1;
 }
 
 .admin-search input:focus,
@@ -3876,8 +3883,9 @@ html[data-theme='dark'] .users-kpi--online .users-kpi__icon {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 500;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
+  color: var(--text);
 }
 
 .users-row__contact > span.muted {
@@ -5062,7 +5070,8 @@ html[data-theme='dark'] .login__footnote {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 500;
+  font-weight: 600;
+  color: var(--text);
 }
 
 .staff-role-chip {
