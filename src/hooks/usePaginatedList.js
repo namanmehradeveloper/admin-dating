@@ -11,7 +11,7 @@ import { getErrorMessage } from '../utils/errors.js';
 import { useAutoRefresh } from './useAutoRefresh.js';
 
 export const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
-export const DEFAULT_PAGE_SIZE = 25;
+export const DEFAULT_PAGE_SIZE = 10;
 /** @deprecated Prefer DEFAULT_PAGE_SIZE; kept for any external imports. */
 export const PAGE_SIZE = DEFAULT_PAGE_SIZE;
 
