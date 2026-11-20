@@ -935,16 +935,21 @@ td.table-cell--stack > span {
 }
 .users-row__state-icon { display: inline-flex; align-items: center; flex-shrink: 0; }
 .users-row__state-icon svg { width: 16px; height: 16px; }
-.users-row__contact { min-width: 0; max-width: 180px; gap: 1px; }
+.users-row__contact { min-width: 0; max-width: 280px; gap: 1px; }
 .users-row__contact > span { line-height: 1.4; }
 .users-row__date { font-size: 12px; line-height: 1.4; white-space: nowrap; }
 .users-row__badges { flex-wrap: nowrap; gap: 4px; }
-.users-col--updated { min-width: 0; width: 1%; white-space: nowrap; }
-.users-col--phone { max-width: 180px; }
-.users-col--name { max-width: 220px; }
+.users-col--updated { min-width: 0; white-space: nowrap; }
+.users-col--phone { max-width: none; }
+.users-col--name { max-width: none; }
+.users-table-panel--data .table td.users-col--name,
+.users-table-panel--data .table td.users-col--phone,
+.users-table-panel--data .table th.users-col--name,
+.users-table-panel--data .table th.users-col--phone {
+  max-width: none;
+}
 .users-col--gender,
-.users-col--status,
-.users-col--photos { width: 1%; white-space: nowrap; }
+.users-col--status { width: 1%; white-space: nowrap; }
 
 .data-table__actions-col,
 .table.data-table td.data-table__actions-col,

@@ -15,7 +15,6 @@ import Notice from '../components/Notice.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import SearchField from '../components/SearchField.jsx';
 import AddUserDialog from '../components/users/AddUserDialog.jsx';
-import StatusBadge from '../components/StatusBadge.jsx';
 import ScheduleDeletionDialog from '../components/users/ScheduleDeletionDialog.jsx';
 import UserActionsMenu from '../components/users/UserActionsMenu.jsx';
 import UserDetailDrawer from '../components/users/UserDetailDrawer.jsx';
@@ -174,9 +173,6 @@ export default function UsersPage() {
     { key: 'name', label: 'Name', className: 'users-col users-col--name' },
     { key: 'phone', label: 'Phone', className: 'users-col users-col--phone' },
     { key: 'gender', label: 'Gender', className: 'users-col users-col--gender' },
-    { key: 'verification', label: 'Verification', className: 'users-col users-col--verification' },
-    { key: 'photos', label: 'Photos', className: 'users-col users-col--photos' },
-    { key: 'visibility', label: 'Visibility', className: 'users-col users-col--visibility' },
     { key: 'status', label: 'Status', className: 'users-col users-col--status' },
     { key: 'updated', label: 'Updated', className: 'users-col users-col--updated' },
     { key: 'actions', label: 'Actions', className: 'data-table__actions-col' },
@@ -307,18 +303,6 @@ export default function UsersPage() {
                   </div>
                 </td>
                 <td className="users-col users-col--gender">{formatGender(user.gender)}</td>
-                <td className="users-col users-col--verification">
-                  <StatusBadge value={user.verificationStatus} />
-                </td>
-                <td className="users-col users-col--photos">
-                  {user.photoCount ?? 0}
-                  {user.pendingPhotoCount > 0 && (
-                    <span className="badge badge--warning badge--flush">{user.pendingPhotoCount} pending</span>
-                  )}
-                </td>
-                <td className="users-col users-col--visibility">
-                  {user.visibilityStatus ? <StatusBadge value={user.visibilityStatus} /> : <span className="muted">—</span>}
-                </td>
                 <td className="users-col users-col--status" onClick={(event) => event.stopPropagation()}>
                   <label className={`status-switch ${!canToggle ? 'is-disabled' : ''}`} title={formatEnum(user.status)}>
                     <input
@@ -365,7 +349,9 @@ export default function UsersPage() {
         onClose={() => setAddOpen(false)}
         onCreated={(created) => {
           setAddOpen(false);
-          setNotice(`Created ${created.displayName} (${created.phoneNumber ?? 'no phone'}).`);
+          setNotice(
+            `Created ${created.displayName} (${created.phoneNumber ?? 'no phone'}).${created._photoNote ?? ''}`,
+          );
           refreshAll();
           openUser(created);
         }}

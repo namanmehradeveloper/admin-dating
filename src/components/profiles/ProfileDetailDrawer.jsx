@@ -1,6 +1,6 @@
 // Side panel for admin profile review: overview, photos, edit, visibility, privacy, history.
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ExternalLink, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
@@ -15,6 +15,7 @@ import {
   updateProfilePrivacy,
   updateProfileVisibility,
 } from '../../api/profiles.api.js';
+import { uploadUserPhotos } from '../../api/users.api.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { useApi } from '../../hooks/useApi.js';
 import { usePaginatedList } from '../../hooks/usePaginatedList.js';
@@ -27,6 +28,8 @@ import ErrorState from '../ErrorState.jsx';
 import LoadingState from '../LoadingState.jsx';
 import StatusBadge from '../StatusBadge.jsx';
 import UserCell from '../UserCell.jsx';
+
+const MAX_PHOTOS = 6;
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
@@ -125,11 +128,65 @@ function OverviewTab({ profile }) {
   );
 }
 
-function PhotosTab({ profile, onChanged }) {
+function ProfilePhotosEditor({ profile, onChanged }) {
+  const existingCount = profile.photos?.length ?? 0;
+  const slotsLeft = Math.max(0, MAX_PHOTOS - existingCount);
+  const [photoFiles, setPhotoFiles] = useState([]);
   const [photoAction, setPhotoAction] = useState(null);
   const [reason, setReason] = useState('');
   const [error, setError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
+
+  const photoPreviews = useMemo(
+    () => photoFiles.map((file) => ({ name: file.name, url: URL.createObjectURL(file) })),
+    [photoFiles],
+  );
+
+  useEffect(() => {
+    return () => {
+      for (const preview of photoPreviews) URL.revokeObjectURL(preview.url);
+    };
+  }, [photoPreviews]);
+
+  useEffect(() => {
+    setPhotoFiles([]);
+    setUploadError(null);
+  }, [profile.id, existingCount]);
+
+  function handlePhotosChange(event) {
+    const selected = [...(event.target.files ?? [])];
+    event.target.value = '';
+    if (!selected.length) return;
+    setPhotoFiles((current) => [...current, ...selected].slice(0, slotsLeft));
+    setUploadError(null);
+  }
+
+  function removePendingPhoto(index) {
+    setPhotoFiles((current) => current.filter((_, i) => i !== index));
+  }
+
+  async function handleUpload() {
+    if (!photoFiles.length || slotsLeft <= 0) return;
+    setIsUploading(true);
+    setUploadError(null);
+    try {
+      const result = await uploadUserPhotos(profile.id, photoFiles);
+      setPhotoFiles([]);
+      const saved = result.photos?.length ?? 0;
+      const failed = result.failures?.length ?? 0;
+      if (failed > 0) {
+        onChanged(`${saved} photo(s) saved; ${failed} failed.`);
+      } else {
+        onChanged(saved === 1 ? 'Photo added.' : `${saved} photos added.`);
+      }
+    } catch (saveError) {
+      setUploadError(getErrorMessage(saveError));
+    } finally {
+      setIsUploading(false);
+    }
+  }
 
   async function confirmAction() {
     setIsSaving(true);
@@ -153,38 +210,84 @@ function PhotosTab({ profile, onChanged }) {
     }
   }
 
-  if (!profile.photos?.length) return <p className="muted">No photos on this profile.</p>;
-
   return (
     <div className="drawer-stack">
-      <div className="photo-grid photo-grid--moderation">
-        {profile.photos.map((photo) => (
-          <div key={photo.id} className="photo-mod-card">
-            <a href={photo.url} target="_blank" rel="noreferrer">
-              <img src={photo.url} alt={`Photo ${photo.order + 1}`} loading="lazy" />
-            </a>
-            <div className="photo-mod-card__meta">
-              <StatusBadge value={photo.moderationStatus} />
-              {photo.moderationReason && <p className="muted small">{photo.moderationReason}</p>}
+      <div className="field">
+        <span>
+          Profile photos ({existingCount}/{MAX_PHOTOS})
+        </span>
+        <p className="muted small">
+          Add or replace images in the database. Remove an existing photo first if you need a free slot (max {MAX_PHOTOS}).
+        </p>
+      </div>
+
+      {existingCount > 0 ? (
+        <div className="photo-grid photo-grid--moderation">
+          {profile.photos.map((photo) => (
+            <div key={photo.id} className="photo-mod-card">
+              <a href={photo.url} target="_blank" rel="noreferrer">
+                <img src={photo.url} alt={`Photo ${photo.order + 1}`} loading="lazy" />
+              </a>
+              <div className="photo-mod-card__meta">
+                <StatusBadge value={photo.moderationStatus} />
+                {photo.moderationReason && <p className="muted small">{photo.moderationReason}</p>}
+              </div>
+              <div className="photo-mod-card__actions">
+                {photo.moderationStatus !== 'APPROVED' && (
+                  <button type="button" className="button button--primary button--small" onClick={() => setPhotoAction({ type: 'approve', photo })}>
+                    Approve
+                  </button>
+                )}
+                {photo.moderationStatus !== 'REJECTED' && (
+                  <button type="button" className="button button--secondary button--small" onClick={() => setPhotoAction({ type: 'reject', photo })}>
+                    Reject
+                  </button>
+                )}
+                <button type="button" className="button button--danger button--small" onClick={() => setPhotoAction({ type: 'remove', photo })}>
+                  Remove
+                </button>
+              </div>
             </div>
-            <div className="photo-mod-card__actions">
-              {photo.moderationStatus !== 'APPROVED' && (
-                <button type="button" className="button button--primary button--small" onClick={() => setPhotoAction({ type: 'approve', photo })}>
-                  Approve
-                </button>
-              )}
-              {photo.moderationStatus !== 'REJECTED' && (
-                <button type="button" className="button button--secondary button--small" onClick={() => setPhotoAction({ type: 'reject', photo })}>
-                  Reject
-                </button>
-              )}
-              <button type="button" className="button button--danger button--small" onClick={() => setPhotoAction({ type: 'remove', photo })}>
+          ))}
+        </div>
+      ) : (
+        <p className="muted">No photos on this profile yet.</p>
+      )}
+
+      <label className="field">
+        <span>Add photos {slotsLeft > 0 ? `(${slotsLeft} slot${slotsLeft === 1 ? '' : 's'} left)` : '(full — remove one to add)'}</span>
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          onChange={handlePhotosChange}
+          disabled={slotsLeft <= 0 || isUploading}
+        />
+      </label>
+
+      {photoPreviews.length > 0 && (
+        <ul className="photo-upload-previews">
+          {photoPreviews.map((preview, index) => (
+            <li key={`${preview.name}-${index}`}>
+              <img src={preview.url} alt={preview.name} width={72} height={72} />
+              <button type="button" className="button button--secondary button--small" onClick={() => removePendingPhoto(index)} disabled={isUploading}>
                 Remove
               </button>
-            </div>
-          </div>
-        ))}
-      </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {uploadError && <p className="form-error">{uploadError}</p>}
+
+      <button
+        type="button"
+        className="button button--primary"
+        onClick={handleUpload}
+        disabled={!photoFiles.length || isUploading || slotsLeft <= 0}
+      >
+        {isUploading ? 'Uploading…' : photoFiles.length ? `Upload ${photoFiles.length} photo${photoFiles.length === 1 ? '' : 's'}` : 'Upload photos'}
+      </button>
 
       {photoAction && (
         <ConfirmDialog
@@ -220,6 +323,10 @@ function PhotosTab({ profile, onChanged }) {
       )}
     </div>
   );
+}
+
+function PhotosTab({ profile, onChanged }) {
+  return <ProfilePhotosEditor profile={profile} onChanged={onChanged} />;
 }
 
 const E164_PHONE = /^\+[1-9]\d{7,14}$/;
@@ -322,6 +429,12 @@ export function EditTab({ profile, interestsCatalog, onChanged }) {
   return (
     <div className="drawer-stack">
       <p className="muted small">Corrections are audited. Provide a reason before saving.</p>
+
+      <section className="edit-photos-section">
+        <h3 className="edit-photos-section__title">Profile photos</h3>
+        <ProfilePhotosEditor profile={profile} onChanged={onChanged} />
+      </section>
+
       {isAdmin && (
         <label className="field">
           <span>Phone number (OTP login)</span>

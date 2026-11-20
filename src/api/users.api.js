@@ -17,6 +17,18 @@ export function createUser(body) {
   return unwrap(api.post('/admin/users', body));
 }
 
+// POST /admin/users/:userId/photos — multipart field "files" (1–6 images)
+export function uploadUserPhotos(userId, files) {
+  const form = new FormData();
+  for (const file of files) form.append('files', file);
+  return unwrap(
+    api.post(`/admin/users/${encodeURIComponent(userId)}/photos`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+    }),
+  );
+}
+
 // GET /admin/users/:userId
 export function getUser(userId) {
   return unwrap(api.get(`/admin/users/${encodeURIComponent(userId)}`));
