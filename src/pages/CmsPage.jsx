@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { createCms, listCms, updateCms } from '../api/cms.api.js';
+import { createCms, deleteCms, listCms, updateCms } from '../api/cms.api.js';
 import ConfirmDialog from '../components/ConfirmDialog.jsx';
 import FilterSelect from '../components/FilterSelect.jsx';
 import FilterToolbar, { FilterChip } from '../components/FilterToolbar.jsx';
@@ -86,12 +86,16 @@ export default function CmsPage() {
   const { hasPermission } = useAuth();
   const canCreateCms = hasPermission('CMS', 'CREATE');
   const canEditCms = hasPermission('CMS', 'EDIT');
+  const canDeleteCms = hasPermission('CMS', 'DELETE');
   const [searchText, setSearchText] = useState('');
   const [filters, setFilters] = useState({ q: '', type: '', status: '' });
   const list = usePaginatedList(listCms, filters);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [notice, setNotice] = useState(null);
   const [busyId, setBusyId] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteError, setDeleteError] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   async function setStatus(id, status) {
     setBusyId(id);
@@ -103,6 +107,22 @@ export default function CmsPage() {
       setNotice(getErrorMessage(error));
     } finally {
       setBusyId(null);
+    }
+  }
+
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteCms(deleteTarget.id);
+      setDeleteTarget(null);
+      setNotice('Content deleted.');
+      list.reload();
+    } catch (error) {
+      setDeleteError(getErrorMessage(error));
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -155,7 +175,7 @@ export default function CmsPage() {
         <ListView
           list={list}
           emptyMessage="No CMS entries yet."
-          columns={['Title', 'Slug', 'Type', 'Status', 'Updated', ...(canEditCms ? ['Actions'] : [])]}
+          columns={['Title', 'Slug', 'Type', 'Status', 'Updated', ...(canEditCms || canDeleteCms ? ['Actions'] : [])]}
           renderRow={(item) => (
             <tr key={item.id}>
               <td>
@@ -167,16 +187,29 @@ export default function CmsPage() {
                 <StatusBadge value={item.status} />
               </td>
               <td>{formatDateTime(item.updatedAt)}</td>
-              {canEditCms && (
+              {(canEditCms || canDeleteCms) && (
                 <td className="stack-inline">
-                  {item.status !== 'PUBLISHED' && (
+                  {canEditCms && item.status !== 'PUBLISHED' && (
                     <button type="button" className="button button--secondary button--small" disabled={busyId === item.id} onClick={() => setStatus(item.id, 'PUBLISHED')}>
                       Publish
                     </button>
                   )}
-                  {item.status !== 'ARCHIVED' && (
+                  {canEditCms && item.status !== 'ARCHIVED' && (
                     <button type="button" className="button button--secondary button--small" disabled={busyId === item.id} onClick={() => setStatus(item.id, 'ARCHIVED')}>
                       Archive
+                    </button>
+                  )}
+                  {canDeleteCms && (
+                    <button
+                      type="button"
+                      className="button button--danger button--small"
+                      disabled={busyId === item.id}
+                      onClick={() => {
+                        setDeleteError(null);
+                        setDeleteTarget(item);
+                      }}
+                    >
+                      Delete
                     </button>
                   )}
                 </td>
@@ -197,6 +230,26 @@ export default function CmsPage() {
           }}
         />
       )}
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete CMS entry"
+        message={
+          deleteTarget
+            ? `Permanently delete “${deleteTarget.title}”? This cannot be undone.`
+            : undefined
+        }
+        confirmLabel="Delete"
+        tone="danger"
+        isBusy={isDeleting}
+        error={deleteError}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          if (isDeleting) return;
+          setDeleteTarget(null);
+          setDeleteError(null);
+        }}
+      />
     </div>
   );
 }

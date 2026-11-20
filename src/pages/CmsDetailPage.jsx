@@ -1,8 +1,9 @@
 // One CMS entry — edit and status changes for ADMIN.
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { getCms, updateCms } from '../api/cms.api.js';
+import { useNavigate, useParams } from 'react-router-dom';
+import { deleteCms, getCms, updateCms } from '../api/cms.api.js';
+import ConfirmDialog from '../components/ConfirmDialog.jsx';
 import DetailList from '../components/DetailList.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import LoadingState from '../components/LoadingState.jsx';
@@ -17,13 +18,18 @@ import { formatDateTime, formatEnum } from '../utils/format.js';
 
 export default function CmsDetailPage() {
   const { cmsId } = useParams();
+  const navigate = useNavigate();
   const { hasPermission } = useAuth();
   const canEditCms = hasPermission('CMS', 'EDIT');
+  const canDeleteCms = hasPermission('CMS', 'DELETE');
   const { data, setData, error, isLoading, reload } = useApi(() => getCms(cmsId), [cmsId], { poll: false });
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [notice, setNotice] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!data) return;
@@ -48,9 +54,41 @@ export default function CmsDetailPage() {
     }
   }
 
+  async function confirmDelete() {
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteCms(cmsId);
+      navigate('/cms', { replace: true });
+    } catch (deleteErr) {
+      setDeleteError(getErrorMessage(deleteErr));
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   return (
     <div className="detail-page">
-      <PageHeader title={data.title} subtitle={data.slug} backTo="/cms" backLabel="CMS" />
+      <PageHeader
+        title={data.title}
+        subtitle={data.slug}
+        backTo="/cms"
+        backLabel="CMS"
+        actions={
+          canDeleteCms && (
+            <button
+              type="button"
+              className="button button--danger"
+              onClick={() => {
+                setDeleteError(null);
+                setIsDeleteOpen(true);
+              }}
+            >
+              Delete
+            </button>
+          )
+        }
+      />
       <Notice onDismiss={() => setNotice(null)}>{notice}</Notice>
 
       <section className="card">
@@ -103,6 +141,22 @@ export default function CmsDetailPage() {
           <pre className="cms-body">{data.body || '—'}</pre>
         </section>
       )}
+
+      <ConfirmDialog
+        open={isDeleteOpen}
+        title="Delete CMS entry"
+        message={`Permanently delete “${data.title}”? This cannot be undone.`}
+        confirmLabel="Delete"
+        tone="danger"
+        isBusy={isDeleting}
+        error={deleteError}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          if (isDeleting) return;
+          setIsDeleteOpen(false);
+          setDeleteError(null);
+        }}
+      />
     </div>
   );
 }

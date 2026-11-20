@@ -236,6 +236,7 @@ export function AuditSummary({ log }) {
       return <span>Config updated</span>;
     case 'CMS_CREATED':
     case 'CMS_UPDATED':
+    case 'CMS_DELETED':
     case 'COUPON_CREATED':
     case 'COUPON_UPDATED':
     case 'REFERRAL_CREATED':

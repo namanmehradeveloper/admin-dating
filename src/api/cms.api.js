@@ -17,3 +17,7 @@ export function createCms(body) {
 export function updateCms(id, body) {
   return unwrap(api.patch(`/admin/cms/${encodeURIComponent(id)}`, body));
 }
+
+export function deleteCms(id) {
+  return unwrap(api.delete(`/admin/cms/${encodeURIComponent(id)}`));
+}
