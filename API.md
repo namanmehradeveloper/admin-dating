@@ -554,7 +554,16 @@ Auth required. Who liked you. **Full list is premium**; free users typically get
 
 ### `GET /likes/sent`
 
-Auth required. Your pending outgoing likes.
+Auth required. Your pending outgoing likes. Items include swipe `id`, `user`, `action`, `likedAt`. Soft-canceled likes are omitted.
+
+---
+
+### `POST /likes/sent/:targetUserId/cancel`
+
+Auth required. Cancel your own pending outgoing `LIKE` / `SUPER_LIKE` toward `targetUserId`.  
+**Rate limit:** 120 per minute.
+
+Soft-cancels the swipe (`canceledAt`); does not delete Match/Conversation; does not refund daily quota; 409 after match or duplicate cancel; 404 if no pending like owned by the caller.
 
 ---
 
@@ -974,6 +983,7 @@ Acks look like `{ ok: true }` or `{ ok: false, error: { code, message } }`.
 | POST | `/swipes/undo` | Yes | Premium undo |
 | GET | `/likes/received` | Yes | Incoming likes |
 | GET | `/likes/sent` | Yes | Outgoing likes |
+| POST | `/likes/sent/:targetUserId/cancel` | Yes | Cancel pending outgoing like |
 | GET | `/matches` | Yes | Match list |
 | GET | `/matches/:matchId` | Yes | One match |
 | POST | `/matches/:matchId/unmatch` | Yes | Unmatch |

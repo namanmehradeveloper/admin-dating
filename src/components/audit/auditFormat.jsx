@@ -160,12 +160,54 @@ export function AuditSummary({ log }) {
         <span>
           Deletion scheduled
           {metadata.scheduledFor ? <div className="muted small">{formatDateTime(metadata.scheduledFor)}</div> : null}
+          {metadata.targetRole ? <div className="muted small">{formatEnum(metadata.targetRole)}</div> : null}
+        </span>
+      );
+    case 'USER_DELETION_CANCELLED':
+      return (
+        <span>
+          Deletion cancelled
+          {metadata.cancelReason ? <div className="muted small">{formatEnum(metadata.cancelReason)}</div> : null}
+        </span>
+      );
+    case 'USER_DELETION_PURGED':
+      return (
+        <span>
+          Account purged
+          {metadata.triggeredBy ? <div className="muted small">{formatEnum(metadata.triggeredBy)}</div> : null}
+        </span>
+      );
+    case 'USER_DELETION_PURGE_FAILED':
+      return (
+        <span>
+          Purge failed
+          {metadata.error ? <div className="muted small">{metadata.error}</div> : null}
+        </span>
+      );
+    case 'USER_DELETION_PURGE_RETRIED':
+      return <span>Purge retry requested</span>;
+    case 'USER_DELETION_FORCE_PURGED':
+      return (
+        <span>
+          Force purged
+          {metadata.targetRole ? <div className="muted small">{formatEnum(metadata.targetRole)}</div> : null}
         </span>
       );
     case 'USER_CREATED':
       return <span>Member account created</span>;
     case 'STAFF_CREATED':
       return <span>Staff account created</span>;
+    case 'STAFF_DELETED':
+      return (
+        <span>
+          Staff account deleted
+          {metadata.email || metadata.role ? (
+            <div className="muted small">
+              {[metadata.email, metadata.role].filter(Boolean).join(' · ')}
+            </div>
+          ) : null}
+        </span>
+      );
     case 'STAFF_ROLE_CHANGED':
     case 'STAFF_STATUS_CHANGED':
       return <StatusChange from={metadata.from} to={metadata.to} />;

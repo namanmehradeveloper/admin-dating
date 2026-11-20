@@ -34,6 +34,10 @@ export function forceStaffLogout(userId, body) {
   return unwrap(api.post(`/admin/staff/${encodeURIComponent(userId)}/force-logout`, body));
 }
 
+export function deleteStaff(userId, body) {
+  return unwrap(api.delete(`/admin/staff/${encodeURIComponent(userId)}`, { data: body ?? {} }));
+}
+
 export function listStaffActivity(userId, params) {
   return unwrap(api.get(`/admin/staff/${encodeURIComponent(userId)}/activity`, { params }));
 }

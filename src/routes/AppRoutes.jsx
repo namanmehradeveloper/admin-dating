@@ -37,6 +37,7 @@ import SwipesPage from '../pages/SwipesPage.jsx';
 import TicketDetailPage from '../pages/TicketDetailPage.jsx';
 import UserDetailPage from '../pages/UserDetailPage.jsx';
 import UsersPage from '../pages/UsersPage.jsx';
+import DeletionManagementPage from '../pages/DeletionManagementPage.jsx';
 import VerificationDetailPage from '../pages/VerificationDetailPage.jsx';
 import VerificationsPage from '../pages/VerificationsPage.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
@@ -65,6 +66,9 @@ export default function AppRoutes() {
           <Route element={<ProtectedRoute permission="USERS.VIEW" />}>
             <Route path="/users" element={<UsersPage />} />
             <Route path="/users/:userId" element={<UserDetailPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="DELETION_MANAGEMENT.VIEW" />}>
+            <Route path="/deletion-management" element={<DeletionManagementPage />} />
           </Route>
           <Route path="/profiles" element={<Navigate to="/users" replace />} />
 

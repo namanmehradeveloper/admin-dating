@@ -1,11 +1,11 @@
 // Presentation metadata only. Route definitions and permission gates stay in utils/constants.js.
 import { Activity, Ban, Beaker, Bell, CreditCard, FileText, Flag, Gift, Heart,
   Headset, LayoutDashboard, LineChart, MessageSquare, Monitor, Phone, ScrollText,
-  Settings, Shield, ShieldAlert, ShieldCheck, Sparkles, Ticket, Users, Wallet } from 'lucide-react';
+  Settings, Shield, ShieldAlert, ShieldCheck, Sparkles, Ticket, Trash2, Users, Wallet } from 'lucide-react';
 import { NAV_GROUPS } from '../utils/constants.js';
 
 export const NAV_ICONS = {
-  '/dashboard': LayoutDashboard, '/users': Users, '/staff': Shield,
+  '/dashboard': LayoutDashboard, '/users': Users, '/deletion-management': Trash2, '/staff': Shield,
   '/verifications': ShieldCheck, '/matches': Heart, '/swipes': Sparkles,
   '/messaging': MessageSquare, '/blocks': Ban, '/calls': Phone, '/reports': Flag,
   '/fraud': ShieldAlert, '/subscriptions': CreditCard, '/subscriptions/plans': CreditCard, '/payments': Wallet,

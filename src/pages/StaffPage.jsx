@@ -5,6 +5,7 @@ import { Shield, UserCog, Users } from 'lucide-react';
 import {
   createStaff,
   deleteRole,
+  deleteStaff,
   getPermissionCatalog,
   getRole,
   getRoleStats,
@@ -128,8 +129,12 @@ export default function StaffPage() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteError, setDeleteError] = useState(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
+  const [staffDeleteTarget, setStaffDeleteTarget] = useState(null);
+  const [staffDeleteError, setStaffDeleteError] = useState(null);
+  const [staffDeleteBusy, setStaffDeleteBusy] = useState(false);
 
   const canCreateStaff = hasPermission('STAFF', 'CREATE');
+  const canDeleteStaff = hasPermission('STAFF', 'DELETE');
   const canCreateRole = hasPermission('ROLES', 'CREATE');
   const canEditRole = hasPermission('ROLES', 'EDIT');
   const canDeleteRole = hasPermission('ROLES', 'DELETE');
@@ -248,6 +253,23 @@ export default function StaffPage() {
     }
   }
 
+  async function confirmDeleteStaff() {
+    setStaffDeleteBusy(true);
+    setStaffDeleteError(null);
+    try {
+      await deleteStaff(staffDeleteTarget.id);
+      setStaffDeleteTarget(null);
+      if (selectedStaffId === staffDeleteTarget.id) setSelectedStaffId(null);
+      setNotice('Staff account deleted.');
+      list.reload();
+      staffStats.reload();
+    } catch (err) {
+      setStaffDeleteError(getErrorMessage(err));
+    } finally {
+      setStaffDeleteBusy(false);
+    }
+  }
+
   return (
     <div className="staff-page">
       <PageHeader
@@ -362,6 +384,7 @@ export default function StaffPage() {
               { key: 'status', label: 'Status', className: 'staff-col staff-col--status' },
               { key: 'lastActive', label: 'Last active', className: 'staff-col staff-col--date' },
               { key: 'joined', label: 'Joined', className: 'staff-col staff-col--date' },
+              ...(canDeleteStaff ? [{ key: 'actions', label: '', className: 'data-table__actions-col' }] : []),
             ]}
             renderRow={(staff) => (
               <tr
@@ -386,6 +409,19 @@ export default function StaffPage() {
                 </td>
                 <td className="staff-col staff-col--date users-row__date">{formatDateTime(staff.lastActiveAt)}</td>
                 <td className="staff-col staff-col--date users-row__date">{formatDateTime(staff.createdAt)}</td>
+                {canDeleteStaff ? (
+                  <td className="data-table__actions-col" onClick={(event) => event.stopPropagation()}>
+                    {staff.id !== me?.id ? (
+                      <button
+                        type="button"
+                        className="button button--danger button--small"
+                        onClick={() => setStaffDeleteTarget(staff)}
+                      >
+                        Delete
+                      </button>
+                    ) : null}
+                  </td>
+                ) : null}
               </tr>
             )}
           />
@@ -566,6 +602,23 @@ export default function StaffPage() {
           onCancel={() => {
             setDeleteTarget(null);
             setDeleteError(null);
+          }}
+        />
+      )}
+
+      {staffDeleteTarget && (
+        <ConfirmDialog
+          open
+          title={`Delete ${staffDeleteTarget.email || staffDeleteTarget.displayName || 'staff'}?`}
+          message="This permanently deletes the staff account and signs them out everywhere. This cannot be undone."
+          confirmLabel="Delete"
+          tone="danger"
+          isBusy={staffDeleteBusy}
+          error={staffDeleteError}
+          onConfirm={confirmDeleteStaff}
+          onCancel={() => {
+            setStaffDeleteTarget(null);
+            setStaffDeleteError(null);
           }}
         />
       )}

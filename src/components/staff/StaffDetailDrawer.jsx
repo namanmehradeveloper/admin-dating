@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import {
+  deleteStaff,
   forceStaffLogout,
   getStaff,
   listStaffActivity,
@@ -10,6 +11,7 @@ import {
   updateStaffRole,
   updateStaffStatus,
 } from '../../api/staff.api.js';
+import { scheduleUserDeletion } from '../../api/users.api.js';
 import { useApi } from '../../hooks/useApi.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { usePaginatedList } from '../../hooks/usePaginatedList.js';
@@ -29,8 +31,10 @@ const TABS = [
 ];
 
 export default function StaffDetailDrawer({ userId, me, roleOptions, onClose, onChanged }) {
-  const { hasPermission } = useAuth();
+  const { hasPermission, user: authUser } = useAuth();
   const canEditStaff = hasPermission('STAFF', 'EDIT');
+  const canDeleteStaff = hasPermission('STAFF', 'DELETE');
+  const canScheduleStaffDeletion = authUser?.role === 'SUPER_ADMIN' && hasPermission('USERS', 'DELETE');
   const detail = useApi(() => getStaff(userId), [userId], { poll: false });
   const [tab, setTab] = useState('overview');
   const [notice, setNotice] = useState(null);
@@ -81,6 +85,22 @@ export default function StaffDetailDrawer({ userId, me, roleOptions, onClose, on
         await forceStaffLogout(userId, { reason: reason.trim() });
         onChanged('Forced logout completed.');
         sessions.reload();
+      } else if (dialog === 'delete') {
+        await deleteStaff(userId);
+        onChanged('Staff account deleted.');
+        setDialog(null);
+        setReason('');
+        onClose();
+        return;
+      } else if (dialog === 'scheduleDeletion') {
+        const result = await scheduleUserDeletion(userId, { reason: reason.trim() });
+        onChanged(
+          `Staff deletion scheduled${result.scheduledFor ? ` for ${formatDateTime(result.scheduledFor)}` : ''} (14-day grace).`,
+        );
+        setDialog(null);
+        setReason('');
+        detail.reload();
+        return;
       }
       setDialog(null);
       setReason('');
@@ -173,11 +193,37 @@ export default function StaffDetailDrawer({ userId, me, roleOptions, onClose, on
                         <button type="button" className="button button--secondary" onClick={() => setDialog('logout')}>
                           Force logout
                         </button>
+                        {canScheduleStaffDeletion ? (
+                          <button type="button" className="button button--danger" onClick={() => setDialog('scheduleDeletion')}>
+                            Schedule deletion
+                          </button>
+                        ) : null}
+                        {canDeleteStaff ? (
+                          <button type="button" className="button button--danger" onClick={() => setDialog('delete')}>
+                            Delete now
+                          </button>
+                        ) : null}
                       </div>
                     </>
                   )}
+                  {!isSelf && !canEditStaff && (canDeleteStaff || canScheduleStaffDeletion) ? (
+                    <div className="stack-inline">
+                      {canScheduleStaffDeletion ? (
+                        <button type="button" className="button button--danger" onClick={() => setDialog('scheduleDeletion')}>
+                          Schedule deletion
+                        </button>
+                      ) : null}
+                      {canDeleteStaff ? (
+                        <button type="button" className="button button--danger" onClick={() => setDialog('delete')}>
+                          Delete now
+                        </button>
+                      ) : null}
+                    </div>
+                  ) : null}
                   {isSelf && <p className="muted small">You cannot change your own role or status here.</p>}
-                  {!isSelf && !canEditStaff && <p className="muted small">You can view this staff account but cannot change role or status.</p>}
+                  {!isSelf && !canEditStaff && !canDeleteStaff && !canScheduleStaffDeletion && (
+                    <p className="muted small">You can view this staff account but cannot change role or status.</p>
+                  )}
                 </div>
               )}
 
@@ -235,14 +281,32 @@ export default function StaffDetailDrawer({ userId, me, roleOptions, onClose, on
                 ? 'Suspend staff account'
                 : dialog === 'activate'
                   ? 'Activate staff account'
-                  : 'Force logout'
+                  : dialog === 'delete'
+                    ? 'Delete staff account'
+                    : dialog === 'scheduleDeletion'
+                      ? 'Schedule staff deletion'
+                      : 'Force logout'
           }
-          message="This action is audited. Active sessions are revoked when suspending, demoting or forcing logout."
-          confirmLabel="Confirm"
-          tone={dialog === 'suspend' || dialog === 'logout' ? 'danger' : 'primary'}
+          message={
+            dialog === 'delete'
+              ? 'This permanently deletes the staff account and signs them out everywhere. This cannot be undone.'
+              : dialog === 'scheduleDeletion'
+                ? 'Schedules a 14-day grace period, then the account is erased. Track, cancel, or force-purge from Deletion management.'
+                : 'This action is audited. Active sessions are revoked when suspending, demoting or forcing logout.'
+          }
+          confirmLabel={
+            dialog === 'delete' ? 'Delete now' : dialog === 'scheduleDeletion' ? 'Schedule deletion' : 'Confirm'
+          }
+          tone={
+            dialog === 'suspend' || dialog === 'logout' || dialog === 'delete' || dialog === 'scheduleDeletion'
+              ? 'danger'
+              : 'primary'
+          }
           isBusy={isBusy}
           error={error}
-          confirmDisabled={['suspend', 'logout'].includes(dialog) && reason.trim().length < 3}
+          confirmDisabled={
+            (['suspend', 'logout', 'scheduleDeletion'].includes(dialog) && reason.trim().length < 3)
+          }
           onConfirm={runDialog}
           onCancel={() => {
             setDialog(null);
@@ -250,7 +314,7 @@ export default function StaffDetailDrawer({ userId, me, roleOptions, onClose, on
             setError(null);
           }}
         >
-          {dialog !== 'role' && (
+          {dialog !== 'role' && dialog !== 'delete' && (
             <label className="field">
               <span>Reason{dialog === 'activate' ? ' (optional)' : ' (3–500 characters)'}</span>
               <textarea rows={3} maxLength={500} value={reason} onChange={(event) => setReason(event.target.value)} />
