@@ -3,10 +3,10 @@
 // `columns` may be strings or { key, label, node, className } objects.
 
 import { useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ErrorState from './ErrorState.jsx';
 import EmptyState from './EmptyState.jsx';
 import LoadingState from './LoadingState.jsx';
+import Pagination from './Pagination.jsx';
 
 function columnKey(column, index) {
   if (typeof column === 'string') return column;
@@ -70,16 +70,19 @@ export default function ListView({ list, columns, renderRow, emptyMessage, table
     return () => window.cancelAnimationFrame(frame);
   }, [list.items, list.isLoading, list.page, list.isLoadingMore, columns.length]);
 
-  if (list.isLoading) return <LoadingState />;
+  if (list.isLoading) {
+    return (
+      <div className="list-view list-view--loading" aria-busy="true">
+        <LoadingState />
+      </div>
+    );
+  }
   if (list.error && list.items.length === 0) return <ErrorState message={list.error} onRetry={list.reload} />;
 
   const isEmpty = list.items.length === 0;
-  const showPager = !isEmpty && (list.hasPrev || list.hasMore || list.page > 1);
-  const canPrev = Boolean(list.hasPrev) && !list.isLoadingMore;
-  const canNext = Boolean(list.hasMore) && !list.isLoadingMore;
 
   return (
-    <>
+    <div className={`list-view${list.isLoadingMore ? ' is-updating' : ''}`.trim()}>
       <div
         ref={wrapRef}
         className={`table-wrap table-wrap--data ${wrapClassName}`.trim()}
@@ -109,38 +112,7 @@ export default function ListView({ list, columns, renderRow, emptyMessage, table
         </table>
       </div>
       {list.error && <ErrorState message={list.error} />}
-      {showPager && (
-        <div className="table-pagination">
-          <p className="table-pagination__meta">
-            Page {list.page}
-            <span className="table-pagination__dot" aria-hidden>
-              ·
-            </span>
-            {list.items.length} shown
-            {list.isLoadingMore ? <span className="table-pagination__loading">Updating…</span> : null}
-          </p>
-          <div className="table-pagination__actions">
-            <button
-              type="button"
-              className="button button--secondary button--small table-pagination__btn"
-              onClick={list.goPrev}
-              disabled={!canPrev}
-            >
-              <ChevronLeft size={16} strokeWidth={2.2} aria-hidden />
-              Previous
-            </button>
-            <button
-              type="button"
-              className="button button--secondary button--small table-pagination__btn"
-              onClick={list.goNext}
-              disabled={!canNext}
-            >
-              Next
-              <ChevronRight size={16} strokeWidth={2.2} aria-hidden />
-            </button>
-          </div>
-        </div>
-      )}
-    </>
+      <Pagination list={list} />
+    </div>
   );
 }
